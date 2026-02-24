@@ -1,9 +1,9 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Sparkles, ArrowLeft, Star, Sparkle, Loader2, Share2, RefreshCw, Heart } from "lucide-react"
+import { Sparkles, ArrowLeft, Star, Sparkle, Loader2, Share2, RefreshCw, Gem, Crown } from "lucide-react"
 import Link from "next/link"
 
 // 十二星座数据
@@ -21,6 +21,21 @@ const CONSTELLATIONS = [
   { name: "水瓶座", symbol: "♒", date: "1.20-2.18", element: "风", mode: "固定", color: "#3498DB" },
   { name: "双鱼座", symbol: "♓", date: "2.19-3.20", element: "水", mode: "变动", color: "#1ABC9C" },
 ]
+
+// 快速选择年份
+const QUICK_YEARS = [
+  { label: "今年", value: new Date().getFullYear() },
+  { label: "去年", value: new Date().getFullYear() - 1 },
+  { label: "2024", value: 2024 },
+  { label: "2000", value: 2000 },
+  { label: "1995", value: 1995 },
+  { label: "1990", value: 1990 },
+  { label: "1985", value: 1985 },
+  { label: "1980", value: 1980 },
+]
+
+// 更多年份选项
+const MORE_YEARS = Array.from({ length: 60 }, (_, i) => new Date().getFullYear() - i - 1)
 
 // 根据日期获取星座（修复版）
 function getConstellation(month: number, day: number): typeof CONSTELLATIONS[0] {
@@ -57,7 +72,6 @@ function getFortune(constellation: string, date: Date) {
   }
   
   const baseFortune = fortunes[constellation] || fortunes["白羊座"]
-  // 根据日期生成不同的运势（每天不同）
   const dayOfYear = Math.floor((date.getTime() - new Date(date.getFullYear(), 0, 0).getTime()) / 86400000)
   const variation = dayOfYear % 3
   
@@ -132,6 +146,120 @@ function StarField() {
   )
 }
 
+// 日期选择器组件
+function DatePicker({ value, onChange }: { value: string; onChange: (date: string) => void }) {
+  const [year, setYear] = useState(value ? new Date(value).getFullYear() : new Date().getFullYear())
+  const [month, setMonth] = useState(value ? new Date(value).getMonth() + 1 : 1)
+  const [day, setDay] = useState(value ? new Date(value).getDate() : 1)
+  const [showYearPicker, setShowYearPicker] = useState(false)
+
+  // 快速选择年份
+  const handleQuickYear = (selectedYear: number) => {
+    setYear(selectedYear)
+    setShowYearPicker(false)
+  }
+
+  // 构建最终日期
+  useEffect(() => {
+    const maxDay = new Date(year, month, 0).getDate()
+    const validDay = Math.min(day, maxDay)
+    onChange(`${year}-${String(month).padStart(2, '0')}-${String(validDay).padStart(2, '0')}`)
+  }, [year, month, day])
+
+  const maxDay = new Date(year, month, 0).getDate()
+
+  return (
+    <div className="space-y-3">
+      {/* 快速年份选择 */}
+      <div className="flex flex-wrap gap-2 mb-4">
+        {QUICK_YEARS.map((q) => (
+          <button
+            key={q.value}
+            onClick={() => handleQuickYear(q.value)}
+            className={`px-3 py-1.5 rounded-full text-sm transition-all ${
+              year === q.value 
+                ? "bg-purple-500 text-white" 
+                : "bg-white/10 text-white/70 hover:bg-white/20"
+            }`}
+          >
+            {q.label}
+          </button>
+        ))}
+        <button
+          onClick={() => setShowYearPicker(!showYearPicker)}
+          className="px-3 py-1.5 rounded-full text-sm bg-white/10 text-white/70 hover:bg-white/20"
+        >
+          更多...
+        </button>
+      </div>
+
+      {/* 年份选择弹窗 */}
+      {showYearPicker && (
+        <div className="bg-white/10 backdrop-blur-xl rounded-xl p-4 border border-white/20 max-h-48 overflow-y-auto">
+          <div className="grid grid-cols-5 gap-2">
+            {MORE_YEARS.map((y) => (
+              <button
+                key={y}
+                onClick={() => {
+                  handleQuickYear(y)
+                  setShowYearPicker(false)
+                }}
+                className={`px-2 py-1 rounded text-sm transition-all ${
+                  year === y 
+                    ? "bg-purple-500 text-white" 
+                    : "text-white/70 hover:bg-white/10"
+                }`}
+              >
+                {y}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 月日选择 */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="space-y-1">
+          <label className="text-xs text-white/60">年份</label>
+          <select
+            value={year}
+            onChange={(e) => setYear(Number(e.target.value))}
+            className="w-full h-12 px-3 rounded-xl bg-white/10 border border-white/20 text-white appearance-none cursor-pointer"
+          >
+            {MORE_YEARS.map((y) => (
+              <option key={y} value={y} className="bg-gray-800">{y}</option>
+            ))}
+          </select>
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs text-white/60">月份</label>
+          <select
+            value={month}
+            onChange={(e) => setMonth(Number(e.target.value))}
+            className="w-full h-12 px-3 rounded-xl bg-white/10 border border-white/20 text-white appearance-none cursor-pointer"
+          >
+            {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+              <option key={m} value={m} className="bg-gray-800">{m}月</option>
+            ))}
+          </select>
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs text-white/60">日期</label>
+          <select
+            value={day}
+            onChange={(e) => setDay(Number(e.target.value))}
+            className="w-full h-12 px-3 rounded-xl bg-white/10 border border-white/20 text-white appearance-none cursor-pointer"
+          >
+            {Array.from({ length: maxDay }, (_, i) => i + 1).map((d) => (
+              <option key={d} value={d} className="bg-gray-800">{d}日</option>
+            ))}
+          </select>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function ConstellationPage() {
   const [birthDate, setBirthDate] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -148,7 +276,6 @@ export default function ConstellationPage() {
     setIsLoading(true)
     setShowResult(false)
     
-    // 模拟AI分析过程
     await new Promise(resolve => setTimeout(resolve, 1500))
     
     const date = new Date(birthDate)
@@ -172,7 +299,6 @@ export default function ConstellationPage() {
         url: window.location.href,
       })
     } else {
-      // 复制到剪贴板
       navigator.clipboard.writeText(`我是${result?.constellation.name}，今日运势排名第${result?.fortune.rank}位！`)
       alert("已复制到剪贴板！")
     }
@@ -209,12 +335,7 @@ export default function ConstellationPage() {
             <CardContent className="space-y-6">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-white/90">出生日期</label>
-                <input
-                  type="date"
-                  value={birthDate}
-                  onChange={(e) => setBirthDate(e.target.value)}
-                  className="w-full h-12 px-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-white/40"
-                />
+                <DatePicker value={birthDate} onChange={setBirthDate} />
               </div>
 
               <Button 
@@ -242,7 +363,6 @@ export default function ConstellationPage() {
           </Card>
         ) : (
           <div className="max-w-2xl mx-auto space-y-6 animate-fade-in-up">
-            {/* 星座卡片 */}
             <Card className="border-white/20 bg-white/10 backdrop-blur-xl overflow-hidden">
               <div 
                 className="h-32 flex items-center justify-center relative"
@@ -271,7 +391,6 @@ export default function ConstellationPage() {
               </CardHeader>
             </Card>
 
-            {/* 运势排名 */}
             <Card className="border-yellow-500/30 bg-yellow-500/10 backdrop-blur-xl">
               <CardContent className="p-6 text-center">
                 <div className="text-sm text-yellow-400 mb-2">今日运势排名</div>
@@ -280,7 +399,6 @@ export default function ConstellationPage() {
               </CardContent>
             </Card>
 
-            {/* 今日运势 */}
             <Card className="border-white/20 bg-white/10 backdrop-blur-xl">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-white">
@@ -299,7 +417,6 @@ export default function ConstellationPage() {
               </CardContent>
             </Card>
 
-            {/* 三维运势 */}
             <div className="grid md:grid-cols-3 gap-4">
               <Card className="border-rose-500/20 bg-rose-500/10 backdrop-blur-xl">
                 <CardHeader className="pb-2">
@@ -338,7 +455,6 @@ export default function ConstellationPage() {
               </Card>
             </div>
 
-            {/* 幸运元素 */}
             <Card className="border-white/20 bg-white/10 backdrop-blur-xl">
               <CardContent className="p-6 grid grid-cols-2 gap-6">
                 <div className="text-center">
@@ -357,7 +473,6 @@ export default function ConstellationPage() {
               </CardContent>
             </Card>
 
-            {/* 操作按钮 */}
             <div className="flex gap-4">
               <Button 
                 variant="outline" 

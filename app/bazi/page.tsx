@@ -10,12 +10,166 @@ import Link from "next/link"
 const TIANGAN = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"]
 const DIZHI = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
 
-// 五行
-const WUXING = ["木", "火", "土", "金", "水"]
+// 快速选择年份
+const QUICK_YEARS = [
+  { label: "今年", value: new Date().getFullYear() },
+  { label: "去年", value: new Date().getFullYear() - 1 },
+  { label: "2024", value: 2024 },
+  { label: "2000", value: 2000 },
+  { label: "1995", value: 1995 },
+  { label: "1990", value: 1990 },
+  { label: "1985", value: 1985 },
+  { label: "1980", value: 1980 },
+  { label: "1975", value: 1975 },
+  { label: "1970", value: 1970 },
+]
+
+// 更多年份选项
+const MORE_YEARS = Array.from({ length: 80 }, (_, i) => new Date().getFullYear() - i - 1)
+
+// 时辰选项
+const HOUR_OPTIONS = [
+  { value: 23, label: "子时", time: "23:00-01:00" },
+  { value: 1, label: "丑时", time: "01:00-03:00" },
+  { value: 3, label: "寅时", time: "03:00-05:00" },
+  { value: 5, label: "卯时", time: "05:00-07:00" },
+  { value: 7, label: "辰时", time: "07:00-09:00" },
+  { value: 9, label: "巳时", time: "09:00-11:00" },
+  { value: 11, label: "午时", time: "11:00-13:00" },
+  { value: 13, label: "未时", time: "13:00-15:00" },
+  { value: 15, label: "申时", time: "15:00-17:00" },
+  { value: 17, label: "酉时", time: "17:00-19:00" },
+  { value: 19, label: "戌时", time: "19:00-21:00" },
+  { value: 21, label: "亥时", time: "21:00-23:00" },
+]
+
+// 日期选择器组件
+function DatePicker({ value, onChange }: { value: string; onChange: (date: string) => void }) {
+  const [year, setYear] = useState(value ? new Date(value).getFullYear() : new Date().getFullYear())
+  const [month, setMonth] = useState(value ? new Date(value).getMonth() + 1 : 1)
+  const [day, setDay] = useState(value ? new Date(value).getDate() : 1)
+  const [showYearPicker, setShowYearPicker] = useState(false)
+
+  const handleQuickYear = (selectedYear: number) => {
+    setYear(selectedYear)
+    setShowYearPicker(false)
+  }
+
+  // 构建最终日期
+  const handleChange = () => {
+    const maxDay = new Date(year, month, 0).getDate()
+    const validDay = Math.min(day, maxDay)
+    onChange(`${year}-${String(month).padStart(2, '0')}-${String(validDay).padStart(2, '0')}`)
+  }
+
+  const maxDay = new Date(year, month, 0).getDate()
+
+  return (
+    <div className="space-y-3">
+      {/* 快速年份选择 */}
+      <div className="flex flex-wrap gap-2 mb-4">
+        {QUICK_YEARS.map((q) => (
+          <button
+            key={q.value}
+            type="button"
+            onClick={() => handleQuickYear(q.value)}
+            className={`px-3 py-1.5 rounded-full text-sm transition-all ${
+              year === q.value 
+                ? "bg-amber-500 text-white" 
+                : "bg-white/10 text-white/70 hover:bg-white/20"
+            }`}
+          >
+            {q.label}
+          </button>
+        ))}
+        <button
+          type="button"
+          onClick={() => setShowYearPicker(!showYearPicker)}
+          className="px-3 py-1.5 rounded-full text-sm bg-white/10 text-white/70 hover:bg-white/20"
+        >
+          更多...
+        </button>
+      </div>
+
+      {/* 年份选择弹窗 */}
+      {showYearPicker && (
+        <div className="bg-white/10 backdrop-blur-xl rounded-xl p-4 border border-white/20 max-h-48 overflow-y-auto">
+          <div className="grid grid-cols-5 gap-2">
+            {MORE_YEARS.map((y) => (
+              <button
+                key={y}
+                type="button"
+                onClick={() => {
+                  handleQuickYear(y)
+                  setShowYearPicker(false)
+                }}
+                className={`px-2 py-1 rounded text-sm transition-all ${
+                  year === y 
+                    ? "bg-amber-500 text-white" 
+                    : "text-white/70 hover:bg-white/10"
+                }`}
+              >
+                {y}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 月日选择 */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="space-y-1">
+          <label className="text-xs text-white/60">年份</label>
+          <select
+            value={year}
+            onChange={(e) => {
+              setYear(Number(e.target.value))
+              handleChange()
+            }}
+            className="w-full h-12 px-3 rounded-xl bg-white/10 border border-white/20 text-white appearance-none cursor-pointer"
+          >
+            {MORE_YEARS.map((y) => (
+              <option key={y} value={y} className="bg-gray-800">{y}</option>
+            ))}
+          </select>
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs text-white/60">月份</label>
+          <select
+            value={month}
+            onChange={(e) => {
+              setMonth(Number(e.target.value))
+              handleChange()
+            }}
+            className="w-full h-12 px-3 rounded-xl bg-white/10 border border-white/20 text-white appearance-none cursor-pointer"
+          >
+            {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+              <option key={m} value={m} className="bg-gray-800">{m}月</option>
+            ))}
+          </select>
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs text-white/60">日期</label>
+          <select
+            value={day}
+            onChange={(e) => {
+              setDay(Number(e.target.value))
+              handleChange()
+            }}
+            className="w-full h-12 px-3 rounded-xl bg-white/10 border border-white/20 text-white appearance-none cursor-pointer"
+          >
+            {Array.from({ length: maxDay }, (_, i) => i + 1).map((d) => (
+              <option key={d} value={d} className="bg-gray-800">{d}日</option>
+            ))}
+          </select>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 // 八字计算函数
 function calculateBazi(year: number, month: number, day: number, hour: number) {
-  // 简化的八字计算（实际需要考虑更多历法因素）
   const yearGanIndex = (year - 4) % 10
   const yearZhiIndex = (year - 4) % 12
   const monthGanIndex = ((year - 1) * 5 + month) % 10
@@ -63,7 +217,6 @@ function getWuxingColor(wuxing: string): string {
 // 命主分析
 function analyzeDestiny(bazi: ReturnType<typeof calculateBazi>) {
   const dayGan = bazi.dayGan
-  const dayZhi = bazi.dayZhi
 
   const destines: Record<string, { title: string; description: string; strength: number; weak: string }> = {
     "甲": { title: "甲木命 - 参天大树", description: "您是甲木命，如同参天大树，正直向上，有领导才能。性格仁厚，但有时过于固执。", strength: 85, weak: "过于刚直" },
@@ -83,7 +236,7 @@ function analyzeDestiny(bazi: ReturnType<typeof calculateBazi>) {
 
 export default function BaziPage() {
   const [birthDate, setBirthDate] = useState("")
-  const [birthHour, setBirthHour] = useState(12)
+  const [birthHour, setBirthHour] = useState(23)
   const [gender, setGender] = useState<"male" | "female">("male")
   const [isLoading, setIsLoading] = useState(false)
   const [result, setResult] = useState<ReturnType<typeof calculateBazi> | null>(null)
@@ -93,7 +246,6 @@ export default function BaziPage() {
     if (!birthDate) return
     setIsLoading(true)
     
-    // 模拟AI分析过程
     await new Promise(resolve => setTimeout(resolve, 2000))
     
     const date = new Date(birthDate)
@@ -176,12 +328,7 @@ export default function BaziPage() {
                   <Calendar className="w-4 h-4" />
                   出生日期
                 </label>
-                <input
-                  type="date"
-                  value={birthDate}
-                  onChange={(e) => setBirthDate(e.target.value)}
-                  className="w-full h-12 px-4 rounded-xl bg-white/10 border border-white/20 text-white"
-                />
+                <DatePicker value={birthDate} onChange={setBirthDate} />
               </div>
 
               <div className="space-y-2">
@@ -189,24 +336,23 @@ export default function BaziPage() {
                   <Clock className="w-4 h-4" />
                   出生时辰
                 </label>
-                <select
-                  value={birthHour}
-                  onChange={(e) => setBirthHour(Number(e.target.value))}
-                  className="w-full h-12 px-4 rounded-xl bg-white/10 border border-white/20 text-white"
-                >
-                  <option value={23}>子时 (23:00-01:00)</option>
-                  <option value={1}>丑时 (01:00-03:00)</option>
-                  <option value={3}>寅时 (03:00-05:00)</option>
-                  <option value={5}>卯时 (05:00-07:00)</option>
-                  <option value={7}>辰时 (07:00-09:00)</option>
-                  <option value={9}>巳时 (09:00-11:00)</option>
-                  <option value={11}>午时 (11:00-13:00)</option>
-                  <option value={13}>未时 (13:00-15:00)</option>
-                  <option value={15}>申时 (15:00-17:00)</option>
-                  <option value={17}>酉时 (17:00-19:00)</option>
-                  <option value={19}>戌时 (19:00-21:00)</option>
-                  <option value={21}>亥时 (21:00-23:00)</option>
-                </select>
+                <div className="grid grid-cols-4 gap-2">
+                  {HOUR_OPTIONS.map((hour) => (
+                    <button
+                      key={hour.value}
+                      type="button"
+                      onClick={() => setBirthHour(hour.value)}
+                      className={`p-2 rounded-lg text-xs transition-all ${
+                        birthHour === hour.value
+                          ? "bg-amber-500 text-white"
+                          : "bg-white/10 text-white/70 hover:bg-white/20"
+                      }`}
+                    >
+                      <div className="font-medium">{hour.label}</div>
+                      <div className="opacity-60">{hour.time}</div>
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -263,7 +409,6 @@ export default function BaziPage() {
           </Card>
         ) : (
           <div className="max-w-2xl mx-auto space-y-6 animate-fade-in-up">
-            {/* 八字盘 */}
             <Card className="border-white/20 bg-white/10 backdrop-blur-xl overflow-hidden">
               <div className="h-24 bg-gradient-to-r from-amber-500/20 via-purple-500/20 to-pink-500/20 flex items-center justify-center">
                 <div className="text-6xl">🎴</div>
@@ -299,7 +444,6 @@ export default function BaziPage() {
               </CardContent>
             </Card>
 
-            {/* 命主分析 */}
             {analysis && (
               <Card className="border-amber-500/30 bg-amber-500/10 backdrop-blur-xl">
                 <CardHeader>
@@ -316,7 +460,6 @@ export default function BaziPage() {
                     {analysis.description}
                   </p>
                   
-                  {/* 命格强度 */}
                   <div className="mt-4 p-4 rounded-xl bg-white/5">
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-white/70">命格强度</span>
@@ -336,7 +479,6 @@ export default function BaziPage() {
               </Card>
             )}
 
-            {/* 付费提示 */}
             <Card className="border-purple-500/30 bg-purple-500/10 backdrop-blur-xl">
               <CardContent className="p-6 text-center">
                 <h3 className="text-lg font-semibold text-white mb-2">解锁完整命理解读</h3>
@@ -350,7 +492,6 @@ export default function BaziPage() {
               </CardContent>
             </Card>
 
-            {/* 操作按钮 */}
             <div className="flex gap-4">
               <Button 
                 variant="outline" 
