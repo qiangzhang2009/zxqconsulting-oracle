@@ -400,7 +400,7 @@ export default function BaziPage() {
               </Button>
               
               <p className="text-xs text-center text-white/50">
-                🚀 测试期无限次 · DeepSeek AI · 命理解读
+                🚀 测试期无限次 · AI智能推演 · 命理解读
               </p>
             </CardContent>
           </Card>

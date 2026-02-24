@@ -376,7 +376,7 @@ export default function ConstellationPage() {
               </Button>
               
               <p className="text-xs text-center text-white/50">
-                🚀 测试期无限次 · DeepSeek AI · 星辰解密
+                🚀 测试期无限次 · AI智能推演 · 星辰解密
               </p>
             </CardContent>
           </Card>
