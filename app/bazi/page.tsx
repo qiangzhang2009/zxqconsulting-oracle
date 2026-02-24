@@ -214,10 +214,11 @@ export default function BaziPage() {
     if (!birthDate) return
     setIsLoading(true)
     
-    const date = new Date(birthDate)
-    const year = date.getFullYear()
-    const month = date.getMonth() + 1
-    const day = date.getDate()
+    // 正确解析日期字符串，避免时区问题
+    const [yearStr, monthStr, dayStr] = birthDate.split('-')
+    const year = parseInt(yearStr, 10)
+    const month = parseInt(monthStr, 10)
+    const day = parseInt(dayStr, 10)
     
     const bazi = calculateBazi(year, month, day, birthHour)
     setResult(bazi)

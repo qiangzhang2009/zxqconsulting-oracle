@@ -263,9 +263,10 @@ export default function ConstellationPage() {
     setIsLoading(true)
     setShowResult(false)
     
-    const date = new Date(birthDate)
-    const month = date.getMonth() + 1
-    const day = date.getDate()
+    // 正确解析日期字符串，避免时区问题
+    const [yearStr, monthStr, dayStr] = birthDate.split('-')
+    const month = parseInt(monthStr, 10)
+    const day = parseInt(dayStr, 10)
     
     const constellation = getConstellation(month, day)
 
