@@ -6,20 +6,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Sparkles, ArrowLeft, Star, Sparkle, Loader2, Share2, RefreshCw, Heart, Lock, Unlock, ChevronRight, Zap, Wand2 } from "lucide-react"
 import Link from "next/link"
 
-// 十二星座数据
+// 十二星座数据 - 只保留最基础的信息
 const CONSTELLATIONS = [
-  { name: "白羊座", symbol: "♈", date: "3.21-4.19", element: "火", mode: "开创", color: "#FF6B6B" },
-  { name: "金牛座", symbol: "♉", date: "4.20-5.20", element: "土", mode: "固定", color: "#4ECDC4" },
-  { name: "双子座", symbol: "♊", date: "5.21-6.21", element: "风", mode: "变动", color: "#FFE66D" },
-  { name: "巨蟹座", symbol: "♋", date: "6.22-7.22", element: "水", mode: "开创", color: "#95E1D3" },
-  { name: "狮子座", symbol: "♌", date: "7.23-8.22", element: "火", mode: "固定", color: "#F38181" },
-  { name: "处女座", symbol: "♍", date: "8.23-9.22", element: "土", mode: "变动", color: "#DDA0DD" },
-  { name: "天秤座", symbol: "♎", date: "9.23-10.23", element: "风", mode: "开创", color: "#FFB347" },
-  { name: "天蝎座", symbol: "♏", date: "10.24-11.22", element: "水", mode: "固定", color: "#9B59B6" },
-  { name: "射手座", symbol: "♐", date: "11.23-12.21", element: "火", mode: "变动", color: "#E74C3C" },
-  { name: "摩羯座", symbol: "♑", date: "12.22-1.19", element: "土", mode: "开创", color: "#8B4513" },
-  { name: "水瓶座", symbol: "♒", date: "1.20-2.18", element: "风", mode: "固定", color: "#3498DB" },
-  { name: "双鱼座", symbol: "♓", date: "2.19-3.20", element: "水", mode: "变动", color: "#1ABC9C" },
+  { name: "白羊座", symbol: "♈", date: "3.21-4.19" },
+  { name: "金牛座", symbol: "♉", date: "4.20-5.20" },
+  { name: "双子座", symbol: "♊", date: "5.21-6.21" },
+  { name: "巨蟹座", symbol: "♋", date: "6.22-7.22" },
+  { name: "狮子座", symbol: "♌", date: "7.23-8.22" },
+  { name: "处女座", symbol: "♍", date: "8.23-9.22" },
+  { name: "天秤座", symbol: "♎", date: "9.23-10.23" },
+  { name: "天蝎座", symbol: "♏", date: "10.24-11.22" },
+  { name: "射手座", symbol: "♐", date: "11.23-12.21" },
+  { name: "摩羯座", symbol: "♑", date: "12.22-1.19" },
+  { name: "水瓶座", symbol: "♒", date: "1.20-2.18" },
+  { name: "双鱼座", symbol: "♓", date: "2.19-3.20" },
 ]
 
 const QUICK_YEARS = [
@@ -284,8 +284,6 @@ export default function ConstellationPage() {
             name: constellation.name,
             symbol: constellation.symbol,
             date: constellation.date,
-            element: constellation.element,
-            mode: constellation.mode,
             birthDate: birthDate,
           }
         })
@@ -296,14 +294,14 @@ export default function ConstellationPage() {
       setResult({ 
         constellation, 
         birthDate,
-        aiAnalysis: data.analysis || 'AI分析生成中...'
+        aiAnalysis: data.analysis || 'AI正在凝望星辰，为你探寻命运...'
       })
     } catch (error) {
       console.error('AI分析错误:', error)
       setResult({ 
         constellation, 
         birthDate,
-        aiAnalysis: '抱歉，AI分析暂时无法生成，请稍后再试。'
+        aiAnalysis: '此刻星辰沉默，请稍后再试。'
       })
     }
     
@@ -316,32 +314,13 @@ export default function ConstellationPage() {
     if (navigator.share && result) {
       navigator.share({
         title: `我的星座是${result.constellation.name}`,
-        text: `我是${result.constellation.name}，AI深度解析你的命运！`,
+        text: `我是${result.constellation.name}，星辰为我揭示了命运的奥秘...`,
         url: window.location.href,
       })
     } else {
-      navigator.clipboard.writeText(`我是${result?.constellation.name}，AI深度解析你的命运！`)
+      navigator.clipboard.writeText(`我是${result?.constellation.name}，星辰为我揭示了命运的奥秘...`)
       alert("已复制到剪贴板！")
     }
-  }
-
-  // 解析AI返回的分析内容
-  const parseAnalysis = (analysis: string) => {
-    const sections: Record<string, string> = {}
-    const lines = analysis.split('\n')
-    let currentKey = ''
-    
-    lines.forEach(line => {
-      const match = line.match(/【(.+?)】/)
-      if (match) {
-        currentKey = match[1]
-        sections[currentKey] = line.replace(/【.+?】/, '').trim()
-      } else if (currentKey && line.trim()) {
-        sections[currentKey] += '\n' + line.trim()
-      }
-    })
-    
-    return sections
   }
 
   return (
@@ -356,7 +335,7 @@ export default function ConstellationPage() {
               <ArrowLeft className="w-5 h-5" />
             </Button>
           </Link>
-          <h1 className="font-serif text-2xl font-bold text-white">星座运势</h1>
+          <h1 className="font-serif text-2xl font-bold text-white">星座解析</h1>
         </div>
 
         {showCelebration && <CelebrationEffect onComplete={() => setShowCelebration(false)} />}
@@ -367,14 +346,14 @@ export default function ConstellationPage() {
               <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center mb-4">
                 <Wand2 className="w-10 h-10 text-white" />
               </div>
-              <CardTitle className="font-serif text-2xl text-white">AI智能星座解析</CardTitle>
+              <CardTitle className="font-serif text-2xl text-white">探索你的星辰密码</CardTitle>
               <CardDescription className="text-white/70">
-                DeepSeek AI 深度分析你的命运密码
+                星辰运转之间，命运已悄然改变
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-white/90">出生日期</label>
+                <label className="text-sm font-medium text-white/90">你的出生日期</label>
                 <DatePicker value={birthDate} onChange={setBirthDate} />
               </div>
 
@@ -386,68 +365,56 @@ export default function ConstellationPage() {
                 {isLoading ? (
                   <>
                     <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    AI正在深度分析中...
+                    星辰正在低语...
                   </>
                 ) : (
                   <>
                     <Wand2 className="w-5 h-5 mr-2" />
-                    开始AI解析
+                    聆听星辰的指引
                   </>
                 )}
               </Button>
               
               <p className="text-xs text-center text-white/50">
-                🚀 测试期无限次 · DeepSeek AI · 精准分析
+                🚀 测试期无限次 · DeepSeek AI · 星辰解密
               </p>
             </CardContent>
           </Card>
         ) : (
           <div className="max-w-2xl mx-auto space-y-6 animate-fade-in-up">
-            {/* 星座卡片 */}
+            {/* 星座卡片 - 简洁神秘 */}
             <Card className="border-white/20 bg-white/10 backdrop-blur-xl overflow-hidden">
               <div 
-                className="h-32 flex items-center justify-center relative"
-                style={{ background: `linear-gradient(135deg, ${result?.constellation.color}40, transparent)` }}
+                className="h-40 flex items-center justify-center relative"
+                style={{ background: 'linear-gradient(180deg, rgba(139, 92, 246, 0.2) 0%, transparent 100%)' }}
               >
                 <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
-                <div className="relative z-10 text-8xl animate-float">{result?.constellation.symbol}</div>
+                <div className="relative z-10 text-9xl animate-float">{result?.constellation.symbol}</div>
               </div>
-              <CardHeader className="text-center -mt-12 relative z-10">
-                <CardTitle className="font-serif text-4xl text-white">{result?.constellation.name}</CardTitle>
-                <CardDescription className="text-white/70 text-lg">{result?.constellation.date}</CardDescription>
-                <div className="flex justify-center gap-3 mt-4">
-                  <span 
-                    className="px-4 py-1.5 rounded-full text-sm font-medium"
-                    style={{ backgroundColor: `${result?.constellation.color}30`, color: result?.constellation.color }}
-                  >
-                    {result?.constellation.element}象
-                  </span>
-                  <span 
-                    className="px-4 py-1.5 rounded-full text-sm font-medium"
-                    style={{ backgroundColor: `${result?.constellation.color}30`, color: result?.constellation.color }}
-                  >
-                    {result?.constellation.mode}星座
-                  </span>
-                </div>
+              <CardHeader className="text-center -mt-8 relative z-10">
+                <CardTitle className="font-serif text-3xl text-white">{result?.constellation.name}</CardTitle>
+                <CardDescription className="text-white/60 text-lg">
+                  {result?.constellation.date}
+                </CardDescription>
               </CardHeader>
             </Card>
 
-            {/* AI分析结果 */}
-            <Card className="border-purple-500/30 bg-gradient-to-r from-purple-500/20 to-blue-500/20 backdrop-blur-xl">
+            {/* AI解读 - 神秘深邃 */}
+            <Card className="border-purple-500/30 bg-gradient-to-br from-purple-900/40 via-indigo-900/30 to-blue-900/40 backdrop-blur-xl">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-white">
-                  <Wand2 className="w-5 h-5 text-purple-400" />
-                  AI深度分析
+                  <Sparkles className="w-5 h-5 text-purple-400" />
+                  星辰的启示
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="prose prose-invert max-w-none">
                   {result?.aiAnalysis.split('\n').map((line, i) => {
                     if (line.match(/^【.+】$/)) {
-                      return <h4 key={i} className="text-purple-400 font-semibold mt-4 mb-2">{line}</h4>
+                      return <h4 key={i} className="text-purple-300 font-semibold mt-6 mb-3 text-lg">{line}</h4>
                     }
                     if (line.trim()) {
-                      return <p key={i} className="text-white/80 leading-relaxed mb-2">{line}</p>
+                      return <p key={i} className="text-white/80 leading-8 text-base mb-3">{line}</p>
                     }
                     return null
                   })}
@@ -455,25 +422,12 @@ export default function ConstellationPage() {
               </CardContent>
             </Card>
 
-            {/* 付费解锁 */}
-            <Card className="border-white/20 bg-white/5 backdrop-blur-xl">
-              <CardHeader className="text-center pb-2">
-                <CardTitle className="text-white flex items-center justify-center gap-2">
-                  <Lock className="w-4 h-4 text-purple-400" />
-                  解锁完整运势
-                </CardTitle>
-                <CardDescription className="text-white/50">
-                  包含事业、财运、爱情、健康等详细分析
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button className="w-full h-12 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
-                  <Unlock className="w-4 h-4 mr-2" />
-                  立即解锁完整版
-                  <ChevronRight className="w-4 h-4 ml-2" />
-                </Button>
-              </CardContent>
-            </Card>
+            {/* 神秘分隔语 */}
+            <div className="text-center py-4">
+              <p className="text-white/30 text-sm italic">
+                "星辰不会告诉你全部，但会指引你方向"
+              </p>
+            </div>
 
             {/* 操作按钮 */}
             <div className="flex gap-4">
@@ -483,20 +437,20 @@ export default function ConstellationPage() {
                 className="flex-1 h-12 border-white/20 text-white hover:bg-white/10"
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
-                重新解析
+                再次探寻
               </Button>
               <Button 
                 onClick={handleShare}
                 className="flex-1 h-12 bg-gradient-to-r from-pink-500 to-purple-500"
               >
                 <Share2 className="w-4 h-4 mr-2" />
-                分享结果
+                分享启示
               </Button>
             </div>
 
             <Link href="/" className="block">
               <Button variant="ghost" className="w-full text-white/60 hover:text-white">
-                返回首页探索更多
+                返回首页继续探索
               </Button>
             </Link>
           </div>

@@ -248,10 +248,10 @@ export default function BaziPage() {
       })
 
       const data = await response.json()
-      setAiAnalysis(data.analysis || 'AI分析生成中...')
+      setAiAnalysis(data.analysis || '命运之轮正在转动...')
     } catch (error) {
       console.error('AI分析错误:', error)
-      setAiAnalysis('抱歉，AI分析暂时无法生成，请稍后再试。')
+      setAiAnalysis('此刻天机不可泄露，请稍后再试。')
     }
     
     setIsLoading(false)
@@ -259,7 +259,7 @@ export default function BaziPage() {
 
   const handleShare = () => {
     if (result) {
-      const text = `我是${result.yearGan}${result.yearZhi}年出生的八字命主，快来测试你的八字！`
+      const text = `我已窥见天机：${result.yearGan}${result.yearZhi}年·${result.monthGan}${result.monthZhi}月·${result.dayGan}${result.dayZhi}日·${result.hourGan}${result.hourZhi}时。命运方舟，为你揭示人生密码！`
       if (navigator.share) {
         navigator.share({
           title: '我的八字命盘',
@@ -303,7 +303,7 @@ export default function BaziPage() {
               <ArrowLeft className="w-5 h-5" />
             </Button>
           </Link>
-          <h1 className="font-serif text-2xl font-bold text-white">八字算命</h1>
+          <h1 className="font-serif text-2xl font-bold text-white">八字命理</h1>
         </div>
 
         {!result ? (
@@ -312,9 +312,9 @@ export default function BaziPage() {
               <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-br from-amber-400 to-purple-500 flex items-center justify-center mb-4">
                 <Gem className="w-10 h-10 text-white" />
               </div>
-              <CardTitle className="font-serif text-2xl text-white">AI智能八字解析</CardTitle>
+              <CardTitle className="font-serif text-2xl text-white">探索你的命运密码</CardTitle>
               <CardDescription className="text-white/70">
-                DeepSeek AI 深度分析你的命理格局
+                阴阳五行之间，命运玄机等你来解
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -389,38 +389,38 @@ export default function BaziPage() {
                 {isLoading ? (
                   <>
                     <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    AI正在深度分析中...
+                    命理正在推演中...
                   </>
                 ) : (
                   <>
                     <Sparkles className="w-5 h-5 mr-2" />
-                    开始AI解析
+                    窥探天机
                   </>
                 )}
               </Button>
               
               <p className="text-xs text-center text-white/50">
-                🚀 测试期无限次 · DeepSeek AI · 精准分析
+                🚀 测试期无限次 · DeepSeek AI · 命理解读
               </p>
             </CardContent>
           </Card>
         ) : (
           <div className="max-w-2xl mx-auto space-y-6 animate-fade-in-up">
-            {/* 八字命盘卡片 */}
+            {/* 八字命盘卡片 - 简洁神秘 */}
             <Card className="border-white/20 bg-white/10 backdrop-blur-xl">
               <CardHeader className="text-center">
                 <CardTitle className="flex items-center justify-center gap-2 text-white">
                   <Crown className="w-6 h-6 text-amber-400" />
-                  您的命盘
+                  命运之轮
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-4 gap-4 text-center">
                   {[
-                    { label: "年柱", gan: result.yearGan, zhi: result.yearZhi },
-                    { label: "月柱", gan: result.monthGan, zhi: result.monthZhi },
-                    { label: "日柱", gan: result.dayGan, zhi: result.dayZhi },
-                    { label: "时柱", gan: result.hourGan, zhi: result.hourZhi },
+                    { label: "年", gan: result.yearGan, zhi: result.yearZhi },
+                    { label: "月", gan: result.monthGan, zhi: result.monthZhi },
+                    { label: "日", gan: result.dayGan, zhi: result.dayZhi },
+                    { label: "时", gan: result.hourGan, zhi: result.hourZhi },
                   ].map((col, i) => (
                     <div key={i} className="space-y-2">
                       <div className="text-xs text-white/50">{col.label}</div>
@@ -430,28 +430,28 @@ export default function BaziPage() {
                     </div>
                   ))}
                 </div>
-                <div className="mt-4 text-center text-white/60 text-sm">
-                  {result.year}年 {result.month}月 {result.day}日 {HOUR_OPTIONS.find(h => h.value === result.hour)?.label || '时辰'}
+                <div className="mt-6 text-center text-white/50 text-sm">
+                  {result.year}年 {result.month}月 {result.day}日 · {HOUR_OPTIONS.find(h => h.value === result.hour)?.label || '时辰'}
                 </div>
               </CardContent>
             </Card>
 
-            {/* AI分析结果 */}
-            <Card className="border-amber-500/30 bg-gradient-to-r from-amber-500/20 to-purple-500/20 backdrop-blur-xl">
+            {/* AI命理解读 - 神秘深邃 */}
+            <Card className="border-amber-500/30 bg-gradient-to-br from-amber-900/40 via-purple-900/30 to-indigo-900/40 backdrop-blur-xl">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-white">
                   <Sparkles className="w-5 h-5 text-amber-400" />
-                  AI深度命理解析
+                  天机解读
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="prose prose-invert max-w-none">
                   {aiAnalysis.split('\n').map((line, i) => {
                     if (line.match(/^【.+】$/)) {
-                      return <h4 key={i} className="text-amber-400 font-semibold mt-4 mb-2">{line}</h4>
+                      return <h4 key={i} className="text-amber-300 font-semibold mt-6 mb-3 text-lg">{line}</h4>
                     }
                     if (line.trim()) {
-                      return <p key={i} className="text-white/80 leading-relaxed mb-2">{line}</p>
+                      return <p key={i} className="text-white/80 leading-8 text-base mb-3">{line}</p>
                     }
                     return null
                   })}
@@ -459,25 +459,12 @@ export default function BaziPage() {
               </CardContent>
             </Card>
 
-            {/* 付费解锁 */}
-            <Card className="border-white/20 bg-white/5 backdrop-blur-xl">
-              <CardHeader className="text-center pb-2">
-                <CardTitle className="text-white flex items-center justify-center gap-2">
-                  <Lock className="w-4 h-4 text-amber-400" />
-                  解锁完整命理
-                </CardTitle>
-                <CardDescription className="text-white/50">
-                  包含大运、流年、事业、财运、婚姻、健康等详细分析
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button className="w-full h-12 bg-gradient-to-r from-amber-500 to-pink-500 hover:from-amber-600 hover:to-pink-600">
-                  <Unlock className="w-4 h-4 mr-2" />
-                  立即解锁完整版
-                  <ChevronRight className="w-4 h-4 ml-2" />
-                </Button>
-              </CardContent>
-            </Card>
+            {/* 神秘分隔语 */}
+            <div className="text-center py-4">
+              <p className="text-white/30 text-sm italic">
+                "命运天注定，但运在人改"
+              </p>
+            </div>
 
             {/* 操作按钮 */}
             <div className="flex gap-4">
@@ -487,20 +474,20 @@ export default function BaziPage() {
                 className="flex-1 h-12 border-white/20 text-white hover:bg-white/10"
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
-                重新解析
+                重新推演
               </Button>
               <Button 
                 onClick={handleShare}
                 className="flex-1 h-12 bg-gradient-to-r from-amber-500 to-purple-500"
               >
                 <Share2 className="w-4 h-4 mr-2" />
-                分享结果
+                分享天机
               </Button>
             </div>
 
             <Link href="/" className="block">
               <Button variant="ghost" className="w-full text-white/60 hover:text-white">
-                返回首页探索更多
+                返回首页继续探索
               </Button>
             </Link>
           </div>

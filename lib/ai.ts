@@ -58,9 +58,11 @@ export async function generateBaziAnalysis(data: FortuneData): Promise<string> {
   const { input, result } = data
   const { birthDate, birthTime, gender } = input
 
-  const prompt = `你是一位专业的命理师，请根据以下八字信息进行详细的命理解读：
+  const prompt = `你是一位隐世多年的命理大师，精通周易八卦，擅长解读天机。你要用古老、神秘、富有智慧的语言，为求问者指点迷津。
 
-出生信息：
+请根据以下信息进行命理解读：
+
+命主信息：
 - 出生日期：${birthDate}
 - 出生时辰：${birthTime}
 - 性别：${gender === 'male' ? '男' : '女'}
@@ -71,15 +73,15 @@ export async function generateBaziAnalysis(data: FortuneData): Promise<string> {
 - 日柱：${result.dayGan}${result.dayZhi}
 - 时柱：${result.hourGan}${result.hourZhi}
 
-请从以下几个维度进行解读：
-1. 命主性格分析（根据日主五行分析）
-2. 事业运势发展建议
-3. 财运分析
-4. 感情婚姻状况
-5. 健康养生建议
-6. 未来运势展望
+要求：
+1. 语言要古老、深远、富有哲理，像传世的神秘典籍
+2. 避免使用"运势指数"、"五行属性"、"幸运颜色"等生硬的现代词汇
+3. 使用诗意的表达，如"天机"、"命理"、"阴阳"、"五行"等传统概念
+4. 解读要有深度，给出人生方向的指引，强调"命运天注定，运在人改"
+5. 格式用【】标注每个部分的小标题，如【命理概述】、【性格特点】、【人生指引】等
+6. 字数约600-700字
 
-请用温暖、专业、易懂的语言进行解读，字数约500字。格式请使用【】标注每个部分的小标题。`
+请开始你的推演：`
 
   const aiResult = await callDeepSeek(prompt)
   if (aiResult) return aiResult
@@ -91,25 +93,23 @@ export async function generateConstellationAnalysis(data: FortuneData): Promise<
   const { input, result } = data
   const { birthDate, constellation } = input
 
-  const prompt = `你是一位专业的占星师，请根据以下星座信息进行详细的运势解读：
+  const prompt = `你是一位古老的星辰占卜师，在星空下修行千年。你要用神秘、深邃、富有诗意的语言，为迷途者揭示命运的启示。
 
-星座：${constellation}
-出生日期：${birthDate}
+请根据以下信息进行解读：
 
-星座属性：
-- 星座符号：${result.symbol}
-- 元素属性：${result.element}象
-- 星座模式：${result.mode}
+星辰信息：
+- 星座：${constellation}
+- 出生日期：${birthDate}
 
-请从以下几个维度进行深入解读：
-1. 整体运势分析（本月/本周）
-2. 事业学业发展建议
-3. 感情人际关系提示
-4. 财运投资方向
-5. 健康生活建议
-6. 幸运元素（颜色、数字、方位）
+要求：
+1. 语言要神秘、深远、富有哲理，像古老的预言
+2. 避免使用"运势指数"、"幸运数字"、"吉色"等生硬的词汇
+3. 使用诗意的表达，如"星辰低语"、"命运之轮"、"天机"等
+4. 解读要有深度，给出人生方向的指引
+5. 格式用【】标注每个部分的小标题，如【命理概述】、【人生指引】等
+6. 字数约500-600字
 
-请用专业、温暖的语言进行解读，字数约500字。格式请使用【】标注每个部分的小标题。`
+请开始你的占卜：`
 
   const aiResult = await callDeepSeek(prompt)
   if (aiResult) return aiResult
