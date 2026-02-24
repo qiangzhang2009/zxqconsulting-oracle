@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Sparkles, ArrowLeft, Calendar, Clock, User, Loader2, Share2, RefreshCw, Gem, Crown } from "lucide-react"
+import { Sparkles, ArrowLeft, Calendar, Clock, User, Loader2, Share2, RefreshCw, Gem, Crown, Lock, Unlock, ChevronRight, Zap } from "lucide-react"
 import Link from "next/link"
 
 // 八字计算相关的常量
@@ -24,10 +24,8 @@ const QUICK_YEARS = [
   { label: "1970", value: 1970 },
 ]
 
-// 更多年份选项
 const MORE_YEARS = Array.from({ length: 80 }, (_, i) => new Date().getFullYear() - i - 1)
 
-// 时辰选项
 const HOUR_OPTIONS = [
   { value: 23, label: "子时", time: "23:00-01:00" },
   { value: 1, label: "丑时", time: "01:00-03:00" },
@@ -55,7 +53,6 @@ function DatePicker({ value, onChange }: { value: string; onChange: (date: strin
     setShowYearPicker(false)
   }
 
-  // 构建最终日期
   const handleChange = () => {
     const maxDay = new Date(year, month, 0).getDate()
     const validDay = Math.min(day, maxDay)
@@ -66,7 +63,6 @@ function DatePicker({ value, onChange }: { value: string; onChange: (date: strin
 
   return (
     <div className="space-y-3">
-      {/* 快速年份选择 */}
       <div className="flex flex-wrap gap-2 mb-4">
         {QUICK_YEARS.map((q) => (
           <button
@@ -91,7 +87,6 @@ function DatePicker({ value, onChange }: { value: string; onChange: (date: strin
         </button>
       </div>
 
-      {/* 年份选择弹窗 */}
       {showYearPicker && (
         <div className="bg-white/10 backdrop-blur-xl rounded-xl p-4 border border-white/20 max-h-48 overflow-y-auto">
           <div className="grid grid-cols-5 gap-2">
@@ -116,7 +111,6 @@ function DatePicker({ value, onChange }: { value: string; onChange: (date: strin
         </div>
       )}
 
-      {/* 月日选择 */}
       <div className="grid grid-cols-3 gap-3">
         <div className="space-y-1">
           <label className="text-xs text-white/60">年份</label>
@@ -214,21 +208,102 @@ function getWuxingColor(wuxing: string): string {
   return colors[wuxing] || "#9E9E9E"
 }
 
-// 命主分析
+// 命主分析 - 更详细
 function analyzeDestiny(bazi: ReturnType<typeof calculateBazi>) {
   const dayGan = bazi.dayGan
+  const dayZhi = bazi.dayZhi
 
-  const destines: Record<string, { title: string; description: string; strength: number; weak: string }> = {
-    "甲": { title: "甲木命 - 参天大树", description: "您是甲木命，如同参天大树，正直向上，有领导才能。性格仁厚，但有时过于固执。", strength: 85, weak: "过于刚直" },
-    "乙": { title: "乙木命 - 藤蔓花草", description: "您是乙木命，如同藤蔓花草，柔韧灵活。性格温和，善于变通，但有时缺乏主见。", strength: 78, weak: "缺乏决断" },
-    "丙": { title: "丙火命 - 太阳之光", description: "您是丙火命，如同太阳之光，热情开朗。富有正义感，但有时过于冲动。", strength: 92, weak: "易冲动" },
-    "丁": { title: "丁火命 - 灯烛之火", description: "您是丁火命，如同灯烛之火，细腻温柔。思想敏锐，但有时多愁善感。", strength: 75, weak: "敏感细腻" },
-    "戊": { title: "戊土命 - 高山厚土", description: "您是戊土命，如同高山厚土稳重可靠。性格踏实，但有时过于保守。", strength: 88, weak: "过于保守" },
-    "己": { title: "己土命 - 田园之土", description: "您是己土命，如同田园之土，宽厚包容。性格稳重，但有时缺乏活力。", strength: 72, weak: "缺乏活力" },
-    "庚": { title: "庚金命 - 金铁之刚", description: "您是庚金命，如同金铁之刚果断坚毅。性格刚强，但有时过于严厉。", strength: 95, weak: "过于严厉" },
-    "辛": { title: "辛金命 - 珠玉之美", description: "您是辛金命，如同珠玉之美精致细腻。性格敏锐，但有时过于敏感。", strength: 80, weak: "过于敏感" },
-    "壬": { title: "壬水命 - 江河之水", description: "您是壬水命，如同江河之水奔放自由。性格豁达，但有时缺乏定性。", strength: 82, weak: "缺乏定性" },
-    "癸": { title: "癸水命 - 雨露滋润", description: "您是癸水命，如同雨露滋润柔和细腻。性格柔情，但有时过于依赖。", strength: 70, weak: "过于依赖" },
+  const destines: Record<string, any> = {
+    "甲": { 
+      title: "甲木命 - 参天大树", 
+      description: "您是甲木命，如同参天大树，正直向上，有领导才能。性格仁厚，但有时过于固执。", 
+      career: "您天生具有领导才能，适合从事管理、决策类工作。事业发展宜向东方或北方。",
+      wealth: "财运营运势良好，正财稳定，偏财可关注木相关行业。",
+      love: "感情方面需要主动表达，合适的人可能是年长或年轻几岁的异性。",
+      health: "注意肝胆方面的健康，保持规律作息。",
+      strength: 85, weak: "过于刚直" 
+    },
+    "乙": { 
+      title: "乙木命 - 藤蔓花草", 
+      description: "您是乙木命，如同藤蔓花草，柔韧灵活。性格温和，善于变通，但有时缺乏主见。", 
+      career: "适合创意、艺术、教育类工作。善于发现机会但需增强执行力。",
+      wealth: "财运平稳，适合稳定的理财方式。",
+      love: "感情丰富，异性缘佳，但需注意选择。",
+      health: "注意神经系统，适当放松。",
+      strength: 78, weak: "缺乏决断" 
+    },
+    "丙": { 
+      title: "丙火命 - 太阳之光", 
+      description: "您是丙火命，如同太阳之光，热情开朗。富有正义感，但有时过于冲动。", 
+      career: "适合需要抛头露面的工作，如销售、公关、演艺。",
+      wealth: "财运旺盛但波动较大，建议稳健理财。",
+      love: "热情主动，但需注意方式方法。",
+      health: "注意心脏和眼睛健康。",
+      strength: 92, weak: "易冲动" 
+    },
+    "丁": { 
+      title: "丁火命 - 灯烛之火", 
+      description: "您是丁火命，如同灯烛之火，细腻温柔。思想敏锐，但有时多愁善感。", 
+      career: "适合细腻、技术类工作，如研究、策划、艺术创作。",
+      wealth: "财运平稳，适合技术类投资。",
+      love: "感情细腻，容易遇到理解你的人。",
+      health: "注意心脏健康，保持心情愉悦。",
+      strength: 75, weak: "敏感细腻" 
+    },
+    "戊": { 
+      title: "戊土命 - 高山厚土", 
+      description: "您是戊土命，如同高山厚土稳重可靠。性格踏实，但有时过于保守。", 
+      career: "适合稳定型工作，如金融、建筑、农业。",
+      wealth: "财运稳定，适合房产、土地类投资。",
+      love: "专一稳定，但需要主动追求。",
+      health: "注意肠胃健康。",
+      strength: 88, weak: "过于保守" 
+    },
+    "己": { 
+      title: "己土命 - 田园之土", 
+      description: "您是己土命，如同田园之土，宽厚包容。性格稳重，但有时缺乏活力。", 
+      career: "适合后勤、服务、教育类工作。",
+      wealth: "财运平稳，适宜储蓄理财。",
+      love: "温柔贤惠，容易遇到合适的人。",
+      health: "注意消化系统。",
+      strength: 72, weak: "缺乏活力" 
+    },
+    "庚": { 
+      title: "庚金命 - 金铁之刚", 
+      description: "您是庚金命，如同金铁之刚果断坚毅。性格刚强，但有时过于严厉。", 
+      career: "适合金融、法律、公安等刚性工作。",
+      wealth: "财运旺盛，适合金属、金融类投资。",
+      love: "需要找到欣赏你坚韧一面的伴侣。",
+      health: "注意呼吸系统。",
+      strength: 95, weak: "过于严厉" 
+    },
+    "辛": { 
+      title: "辛金命 - 珠玉之美", 
+      description: "您是辛金命，如同珠玉之美精致细腻。性格敏锐，但有时过于敏感。", 
+      career: "适合精致、艺术、时尚类工作。",
+      wealth: "财运不错，适合艺术品投资。",
+      love: "追求完美，需找到心灵相通的人。",
+      health: "注意肺部健康。",
+      strength: 80, weak: "过于敏感" 
+    },
+    "壬": { 
+      title: "壬水命 - 江河之水", 
+      description: "您是壬水命，如同江河之水奔放自由。性格豁达，但有时缺乏定性。", 
+      career: "适合流动、变化大的工作，如贸易、旅游。",
+      wealth: "财运波动大，但来去自如。",
+      love: "需要寻找能给你安全感的人。",
+      health: "注意肾脏和泌尿系统。",
+      strength: 82, weak: "缺乏定性" 
+    },
+    "癸": { 
+      title: "癸水命 - 雨露滋润", 
+      description: "您是癸水命，如同雨露滋润柔和细腻。性格柔情，但有时过于依赖。", 
+      career: "适合细腻、服务类工作，如医疗、教育。",
+      wealth: "财运平稳，需稳定理财。",
+      love: "柔情似水，容易遇到珍惜你的人。",
+      health: "注意血液循环。",
+      strength: 70, weak: "过于依赖" 
+    },
   }
 
   return destines[dayGan] || { title: "未知", description: "命格分析待定", strength: 50, weak: "待探索" }
@@ -246,7 +321,7 @@ export default function BaziPage() {
     if (!birthDate) return
     setIsLoading(true)
     
-    await new Promise(resolve => setTimeout(resolve, 2000))
+    await new Promise(resolve => setTimeout(resolve, 2500))
     
     const date = new Date(birthDate)
     const year = date.getFullYear()
@@ -281,7 +356,6 @@ export default function BaziPage() {
     <div className="min-h-screen relative">
       <div className="absolute inset-0 bg-gradient-to-b from-purple-950 via-indigo-950 to-background" />
       
-      {/* 背景装饰 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {Array.from({ length: 30 }).map((_, i) => (
           <div
@@ -403,12 +477,13 @@ export default function BaziPage() {
               </Button>
 
               <p className="text-xs text-center text-white/50">
-                免费解析 · 每日限3次 · 精准分析
+                🚀 测试期无限次 · AI深度分析 · 准到离谱
               </p>
             </CardContent>
           </Card>
         ) : (
           <div className="max-w-2xl mx-auto space-y-6 animate-fade-in-up">
+            {/* 八字盘 */}
             <Card className="border-white/20 bg-white/10 backdrop-blur-xl overflow-hidden">
               <div className="h-24 bg-gradient-to-r from-amber-500/20 via-purple-500/20 to-pink-500/20 flex items-center justify-center">
                 <div className="text-6xl">🎴</div>
@@ -444,6 +519,7 @@ export default function BaziPage() {
               </CardContent>
             </Card>
 
+            {/* 命主分析 */}
             {analysis && (
               <Card className="border-amber-500/30 bg-amber-500/10 backdrop-blur-xl">
                 <CardHeader>
@@ -479,19 +555,60 @@ export default function BaziPage() {
               </Card>
             )}
 
-            <Card className="border-purple-500/30 bg-purple-500/10 backdrop-blur-xl">
-              <CardContent className="p-6 text-center">
-                <h3 className="text-lg font-semibold text-white mb-2">解锁完整命理解读</h3>
-                <p className="text-sm text-white/60 mb-4">
-                  升级VIP会员，查看详细的事业、财运、婚姻分析
-                </p>
-                <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
-                  <Crown className="w-4 h-4 mr-2" />
-                  立即解锁 (¥29/月)
+            {/* 详细分析 - 付费解锁 */}
+            <Card className="border-white/20 bg-white/5 backdrop-blur-xl">
+              <CardHeader className="text-center pb-2">
+                <CardTitle className="text-white flex items-center justify-center gap-2">
+                  <Lock className="w-4 h-4 text-amber-400" />
+                  详细命理解读
+                </CardTitle>
+                <CardDescription className="text-white/50">
+                  解锁查看完整的事业、财运、婚姻、健康分析
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* 隐藏的内容预览 */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="p-4 rounded-xl bg-white/5 border border-white/10 opacity-50">
+                    <div className="flex items-center gap-2 text-blue-400 mb-2">
+                      <Zap className="w-4 h-4" />
+                      <span className="text-sm font-medium">事业分析</span>
+                    </div>
+                    <p className="text-white/60 text-sm blur-sm">{analysis?.career}</p>
+                  </div>
+                  <div className="p-4 rounded-xl bg-white/5 border border-white/10 opacity-50">
+                    <div className="flex items-center gap-2 text-yellow-400 mb-2">
+                      <Sparkles className="w-4 h-4" />
+                      <span className="text-sm font-medium">财运解读</span>
+                    </div>
+                    <p className="text-white/60 text-sm blur-sm">{analysis?.wealth}</p>
+                  </div>
+                  <div className="p-4 rounded-xl bg-white/5 border border-white/10 opacity-50">
+                    <div className="flex items-center gap-2 text-rose-400 mb-2">
+                      <Crown className="w-4 h-4" />
+                      <span className="text-sm font-medium">婚姻感情</span>
+                    </div>
+                    <p className="text-white/60 text-sm blur-sm">{analysis?.love}</p>
+                  </div>
+                  <div className="p-4 rounded-xl bg-white/5 border border-white/10 opacity-50">
+                    <div className="flex items-center gap-2 text-green-400 mb-2">
+                      <Sparkles className="w-4 h-4" />
+                      <span className="text-sm font-medium">健康提示</span>
+                    </div>
+                    <p className="text-white/60 text-sm blur-sm">{analysis?.health}</p>
+                  </div>
+                </div>
+
+                {/* 解锁按钮 */}
+                <Button className="w-full h-12 bg-gradient-to-r from-amber-500 to-pink-500 hover:from-amber-600 hover:to-pink-600">
+                  <Unlock className="w-4 h-4 mr-2" />
+                  解锁完整命理解读
+                  <ChevronRight className="w-4 h-4 ml-2" />
                 </Button>
               </CardContent>
             </Card>
 
+            {/* 操作按钮 */}
             <div className="flex gap-4">
               <Button 
                 variant="outline" 
