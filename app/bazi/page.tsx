@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Sparkles, ArrowLeft, Calendar, Clock, User, Loader2, Share2, RefreshCw, Gem, Crown, Lock, Unlock, ChevronRight, Zap } from "lucide-react"
 import Link from "next/link"
+import { LoadingAnimation, ButtonLoading } from "@/components/loading-animation"
 
 // 八字计算相关的常量
 const TIANGAN = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"]
@@ -207,6 +208,7 @@ export default function BaziPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [result, setResult] = useState<ReturnType<typeof calculateBazi> | null>(null)
   const [aiAnalysis, setAiAnalysis] = useState<string>("")
+  const [isAnalyzingAI, setIsAnalyzingAI] = useState(false)
 
   const handleCalculate = async () => {
     if (!birthDate) return
@@ -219,6 +221,7 @@ export default function BaziPage() {
     
     const bazi = calculateBazi(year, month, day, birthHour)
     setResult(bazi)
+    setIsAnalyzingAI(true)
 
     try {
       // 调用AI分析接口
@@ -260,9 +263,10 @@ export default function BaziPage() {
     } catch (error) {
       console.error('AI分析错误:', error)
       setAiAnalysis('此刻天机不可泄露，请稍后再试。')
+    } finally {
+      setIsAnalyzingAI(false)
+      setIsLoading(false)
     }
-    
-    setIsLoading(false)
   }
 
   const handleShare = () => {
@@ -453,17 +457,21 @@ export default function BaziPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="prose prose-invert max-w-none">
-                  {aiAnalysis.split('\n').map((line, i) => {
-                    if (line.match(/^【.+】$/)) {
-                      return <h4 key={i} className="text-amber-300 font-semibold mt-6 mb-3 text-lg">{line}</h4>
-                    }
-                    if (line.trim()) {
-                      return <p key={i} className="text-white/80 leading-8 text-base mb-3">{line}</p>
-                    }
-                    return null
-                  })}
-                </div>
+                {isAnalyzingAI ? (
+                  <LoadingAnimation message="命运推演中..." />
+                ) : (
+                  <div className="prose prose-invert max-w-none">
+                    {aiAnalysis.split('\n').map((line, i) => {
+                      if (line.match(/^【.+】$/)) {
+                        return <h4 key={i} className="text-amber-300 font-semibold mt-6 mb-3 text-lg">{line}</h4>
+                      }
+                      if (line.trim()) {
+                        return <p key={i} className="text-white/80 leading-8 text-base mb-3">{line}</p>
+                      }
+                      return null
+                    })}
+                  </div>
+                )}
               </CardContent>
             </Card>
 

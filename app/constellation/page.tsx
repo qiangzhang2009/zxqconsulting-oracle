@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Sparkles, ArrowLeft, Star, Sparkle, Loader2, Share2, RefreshCw, Heart, Lock, Unlock, ChevronRight, Zap, Wand2 } from "lucide-react"
 import Link from "next/link"
+import { LoadingAnimation } from "@/components/loading-animation"
 
 // 十二星座数据 - 只保留最基础的信息
 const CONSTELLATIONS = [
@@ -254,6 +255,7 @@ export default function ConstellationPage() {
     birthDate: string
     aiAnalysis: string
   } | null>(null)
+  const [isAnalyzingAI, setIsAnalyzingAI] = useState(false)
 
   const handleCalculate = async () => {
     if (!birthDate) return
@@ -266,6 +268,9 @@ export default function ConstellationPage() {
     const day = date.getDate()
     
     const constellation = getConstellation(month, day)
+
+    setResult({ constellation, birthDate, aiAnalysis: '' })
+    setIsAnalyzingAI(true)
 
     try {
       // 调用AI分析接口
@@ -314,6 +319,8 @@ export default function ConstellationPage() {
         birthDate,
         aiAnalysis: '此刻星辰沉默，请稍后再试。'
       })
+    } finally {
+      setIsAnalyzingAI(false)
     }
     
     setIsLoading(false)
@@ -419,17 +426,21 @@ export default function ConstellationPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="prose prose-invert max-w-none">
-                  {result?.aiAnalysis.split('\n').map((line, i) => {
-                    if (line.match(/^【.+】$/)) {
-                      return <h4 key={i} className="text-purple-300 font-semibold mt-6 mb-3 text-lg">{line}</h4>
-                    }
-                    if (line.trim()) {
-                      return <p key={i} className="text-white/80 leading-8 text-base mb-3">{line}</p>
-                    }
-                    return null
-                  })}
-                </div>
+                {isAnalyzingAI ? (
+                  <LoadingAnimation message="星辰正在排列..." />
+                ) : (
+                  <div className="prose prose-invert max-w-none">
+                    {result?.aiAnalysis.split('\n').map((line, i) => {
+                      if (line.match(/^【.+】$/)) {
+                        return <h4 key={i} className="text-purple-300 font-semibold mt-6 mb-3 text-lg">{line}</h4>
+                      }
+                      if (line.trim()) {
+                        return <p key={i} className="text-white/80 leading-8 text-base mb-3">{line}</p>
+                      }
+                      return null
+                    })}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
