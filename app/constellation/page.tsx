@@ -116,30 +116,51 @@ function StarField() {
 }
 
 function DatePicker({ value, onChange }: { value: string; onChange: (date: string) => void }) {
-  const initialDate = value || "2000-01-01"
-  const [year, setYear] = useState(() => new Date(initialDate).getFullYear())
-  const [month, setMonth] = useState(() => new Date(initialDate).getMonth() + 1)
-  const [day, setDay] = useState(() => new Date(initialDate).getDate())
+  // 直接从字符串解析年月日，不使用时区转换
+  const parseDate = (dateStr: string) => {
+    const parts = dateStr.split('-')
+    return {
+      year: parseInt(parts[0], 10),
+      month: parseInt(parts[1], 10),
+      day: parseInt(parts[2], 10)
+    }
+  }
+
+  const initial = parseDate(value || "2000-01-01")
+  const [year, setYear] = useState(initial.year)
+  const [month, setMonth] = useState(initial.month)
+  const [day, setDay] = useState(initial.day)
   const [showYearPicker, setShowYearPicker] = useState(false)
 
+  // 当外部value变化时，同步状态
   useEffect(() => {
-    if (value) {
-      const d = new Date(value)
-      setYear(d.getFullYear())
-      setMonth(d.getMonth() + 1)
-      setDay(d.getDate())
-    }
+    const parsed = parseDate(value)
+    setYear(parsed.year)
+    setMonth(parsed.month)
+    setDay(parsed.day)
   }, [value])
 
   const handleQuickYear = (selectedYear: number) => {
     setYear(selectedYear)
     setShowYearPicker(false)
+    // 立即更新父组件
+    const maxDay = new Date(selectedYear, month, 0).getDate()
+    const validDay = Math.min(day, maxDay)
+    onChange(`${selectedYear}-${String(month).padStart(2, '0')}-${String(validDay).padStart(2, '0')}`)
   }
 
-  const handleChange = () => {
-    const maxDay = new Date(year, month, 0).getDate()
+  const handleMonthChange = (newMonth: number) => {
+    setMonth(newMonth)
+    // 调整日期到当月最大天数
+    const maxDay = new Date(year, newMonth, 0).getDate()
     const validDay = Math.min(day, maxDay)
-    onChange(`${year}-${String(month).padStart(2, '0')}-${String(validDay).padStart(2, '0')}`)
+    setDay(validDay)
+    onChange(`${year}-${String(newMonth).padStart(2, '0')}-${String(validDay).padStart(2, '0')}`)
+  }
+
+  const handleDayChange = (newDay: number) => {
+    setDay(newDay)
+    onChange(`${year}-${String(month).padStart(2, '0')}-${String(newDay).padStart(2, '0')}`)
   }
 
   const maxDay = new Date(year, month, 0).getDate()
@@ -199,10 +220,7 @@ function DatePicker({ value, onChange }: { value: string; onChange: (date: strin
           <label className="text-xs text-white/60">年份</label>
           <select
             value={year}
-            onChange={(e) => {
-              setYear(Number(e.target.value))
-              handleChange()
-            }}
+            onChange={(e) => handleQuickYear(Number(e.target.value))}
             className="w-full h-12 px-3 rounded-xl bg-white/10 border border-white/20 text-white appearance-none cursor-pointer"
           >
             {MORE_YEARS.map((y) => (
@@ -214,10 +232,7 @@ function DatePicker({ value, onChange }: { value: string; onChange: (date: strin
           <label className="text-xs text-white/60">月份</label>
           <select
             value={month}
-            onChange={(e) => {
-              setMonth(Number(e.target.value))
-              handleChange()
-            }}
+            onChange={(e) => handleMonthChange(Number(e.target.value))}
             className="w-full h-12 px-3 rounded-xl bg-white/10 border border-white/20 text-white appearance-none cursor-pointer"
           >
             {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
@@ -229,10 +244,7 @@ function DatePicker({ value, onChange }: { value: string; onChange: (date: strin
           <label className="text-xs text-white/60">日期</label>
           <select
             value={day}
-            onChange={(e) => {
-              setDay(Number(e.target.value))
-              handleChange()
-            }}
+            onChange={(e) => handleDayChange(Number(e.target.value))}
             className="w-full h-12 px-3 rounded-xl bg-white/10 border border-white/20 text-white appearance-none cursor-pointer"
           >
             {Array.from({ length: maxDay }, (_, i) => i + 1).map((d) => (
