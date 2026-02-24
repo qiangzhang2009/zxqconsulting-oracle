@@ -269,6 +269,7 @@ export default function ConstellationPage() {
 
     try {
       // 调用AI分析接口
+      console.log('发送AI分析请求...', { birthDate, constellation })
       const response = await fetch('/api/ai/analyze', {
         method: 'POST',
         headers: {
@@ -290,12 +291,22 @@ export default function ConstellationPage() {
       })
 
       const data = await response.json()
+      console.log('AI响应数据:', data)
       
-      setResult({ 
-        constellation, 
-        birthDate,
-        aiAnalysis: data.analysis || 'AI正在凝望星辰，为你探寻命运...'
-      })
+      if (data.error) {
+        console.error('AI返回错误:', data.error)
+        setResult({ 
+          constellation, 
+          birthDate,
+          aiAnalysis: '此刻星辰沉默，请稍后再试。'
+        })
+      } else {
+        setResult({ 
+          constellation, 
+          birthDate,
+          aiAnalysis: data.analysis || 'AI正在凝望星辰，为你探寻命运...'
+        })
+      }
     } catch (error) {
       console.error('AI分析错误:', error)
       setResult({ 

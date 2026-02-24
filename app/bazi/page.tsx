@@ -222,6 +222,7 @@ export default function BaziPage() {
 
     try {
       // 调用AI分析接口
+      console.log('发送AI分析请求...', { birthDate, birthHour, gender, bazi })
       const response = await fetch('/api/ai/analyze', {
         method: 'POST',
         headers: {
@@ -248,7 +249,14 @@ export default function BaziPage() {
       })
 
       const data = await response.json()
-      setAiAnalysis(data.analysis || '命运之轮正在转动...')
+      console.log('AI响应数据:', data)
+      
+      if (data.error) {
+        console.error('AI返回错误:', data.error)
+        setAiAnalysis('此刻天机不可泄露，请稍后再试。')
+      } else {
+        setAiAnalysis(data.analysis || '命运之轮正在转动...')
+      }
     } catch (error) {
       console.error('AI分析错误:', error)
       setAiAnalysis('此刻天机不可泄露，请稍后再试。')

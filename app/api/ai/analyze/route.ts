@@ -6,6 +6,8 @@ export async function POST(request: Request) {
     const body = await request.json()
     const { type, input, result } = body
 
+    console.log('AI分析请求:', { type, input, result })
+
     if (!type || !result) {
       return NextResponse.json({ error: '缺少必要参数' }, { status: 400 })
     }
@@ -17,6 +19,12 @@ export async function POST(request: Request) {
     }
 
     const analysis = await generateAnalysis(data)
+    
+    console.log('AI分析结果长度:', analysis.length)
+
+    if (!analysis || analysis.length === 0) {
+      return NextResponse.json({ error: '分析生成失败' }, { status: 500 })
+    }
 
     return NextResponse.json({ analysis })
   } catch (error) {
