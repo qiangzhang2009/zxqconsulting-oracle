@@ -20,6 +20,10 @@ export const metadata: Metadata = {
   keywords: "算命,八字,星座,周易,塔罗,命理,AI算命",
   authors: [{ name: "Fortune Insight Team" }],
   viewport: "width=device-width, initial-scale=1, maximum-scale=1",
+  icons: {
+    icon: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
 }
 
 export default function RootLayout({

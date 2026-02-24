@@ -21,14 +21,16 @@ export default function LoginPage() {
       alert("请输入正确的手机号")
       return
     }
-    // 模拟发送验证码
+    // 演示模式：直接使用固定验证码
     setSentCode(true)
-    alert("验证码已发送（演示模式：123456）")
+    setCode("123456")
+    alert("演示模式：已自动填入验证码 123456")
   }
 
   const handleLogin = async () => {
-    if (!phone || !code) {
-      alert("请输入手机号和验证码")
+    // 演示模式：任何验证码都可以登录
+    if (!phone) {
+      alert("请输入手机号")
       return
     }
 
@@ -37,7 +39,7 @@ export default function LoginPage() {
     try {
       const result = await signIn("credentials", {
         phone,
-        code,
+        code: code || "123456", // 演示模式使用默认验证码
         redirect: false,
       })
 

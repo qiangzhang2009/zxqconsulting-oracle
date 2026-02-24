@@ -108,9 +108,11 @@ export default function HomePage() {
 
         {/* CTA按钮 */}
         <div className="text-center">
-          <Button size="lg" className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-8 py-6 text-lg rounded-full animate-pulse-glow">
-            开始算命
-          </Button>
+          <Link href="/bazi">
+            <Button size="lg" className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-8 py-6 text-lg rounded-full animate-pulse-glow">
+              开始算命
+            </Button>
+          </Link>
           <p className="mt-4 text-sm text-muted-foreground">
             每日免费算命3次 · 首次注册赠送VIP体验
           </p>

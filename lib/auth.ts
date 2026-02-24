@@ -1,6 +1,18 @@
 import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
-import { getUserByPhone, createUser } from "@/lib/notion"
+
+// 简化版认证：不依赖 Notion，使用内存存储
+// 演示模式：任何手机号都可以直接登录
+
+interface DemoUser {
+  id: string
+  phone: string
+  name: string
+  createdAt: number
+}
+
+// 内存存储演示用户
+const demoUsers: Map<string, DemoUser> = new Map()
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -15,28 +27,25 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        // 简化版：直接用手机号创建/查找用户
-        // 实际生产需要验证码验证
-        const existingUser = await getUserByPhone(credentials.phone)
-
-        if (existingUser) {
-          return {
-            id: (existingUser as any).id || 'unknown',
-            phone: credentials.phone,
-            name: `用户${credentials.phone.slice(-4)}`,
+        const phone = credentials.phone.trim()
+        
+        // 查找或创建演示用户
+        let user = demoUsers.get(phone)
+        
+        if (!user) {
+          user = {
+            id: 'user-' + Date.now(),
+            phone: phone,
+            name: `用户${phone.slice(-4)}`,
+            createdAt: Date.now()
           }
+          demoUsers.set(phone, user)
         }
 
-        // 创建新用户
-        const newUser = await createUser({
-          phone: credentials.phone,
-          name: `用户${credentials.phone.slice(-4)}`
-        })
-
         return {
-          id: (newUser as any).id || 'unknown',
-          phone: credentials.phone,
-          name: `用户${credentials.phone.slice(-4)}`,
+          id: user.id,
+          phone: user.phone,
+          name: user.name,
         }
       }
     })
