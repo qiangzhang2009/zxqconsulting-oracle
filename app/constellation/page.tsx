@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Sparkles, ArrowLeft, Star, Sparkle, Loader2, Share2, RefreshCw, Heart, Lock, Unlock, ChevronRight, Zap } from "lucide-react"
@@ -244,10 +244,21 @@ function StarField() {
 }
 
 function DatePicker({ value, onChange }: { value: string; onChange: (date: string) => void }) {
-  const [year, setYear] = useState(value ? new Date(value).getFullYear() : new Date().getFullYear())
-  const [month, setMonth] = useState(value ? new Date(value).getMonth() + 1 : 1)
-  const [day, setDay] = useState(value ? new Date(value).getDate() : 1)
+  const initialDate = value || "2000-01-01"
+  const [year, setYear] = useState(() => new Date(initialDate).getFullYear())
+  const [month, setMonth] = useState(() => new Date(initialDate).getMonth() + 1)
+  const [day, setDay] = useState(() => new Date(initialDate).getDate())
   const [showYearPicker, setShowYearPicker] = useState(false)
+
+  // 当外部value变化时更新内部状态
+  useEffect(() => {
+    if (value) {
+      const d = new Date(value)
+      setYear(d.getFullYear())
+      setMonth(d.getMonth() + 1)
+      setDay(d.getDate())
+    }
+  }, [value])
 
   const handleQuickYear = (selectedYear: number) => {
     setYear(selectedYear)
@@ -364,7 +375,7 @@ function DatePicker({ value, onChange }: { value: string; onChange: (date: strin
 }
 
 export default function ConstellationPage() {
-  const [birthDate, setBirthDate] = useState("")
+  const [birthDate, setBirthDate] = useState("2000-01-01")  // 默认日期
   const [isLoading, setIsLoading] = useState(false)
   const [showResult, setShowResult] = useState(false)
   const [showCelebration, setShowCelebration] = useState(false)

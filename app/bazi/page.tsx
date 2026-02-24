@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Sparkles, ArrowLeft, Calendar, Clock, User, Loader2, Share2, RefreshCw, Gem, Crown, Lock, Unlock, ChevronRight, Zap } from "lucide-react"
@@ -43,10 +43,21 @@ const HOUR_OPTIONS = [
 
 // 日期选择器组件
 function DatePicker({ value, onChange }: { value: string; onChange: (date: string) => void }) {
-  const [year, setYear] = useState(value ? new Date(value).getFullYear() : new Date().getFullYear())
-  const [month, setMonth] = useState(value ? new Date(value).getMonth() + 1 : 1)
-  const [day, setDay] = useState(value ? new Date(value).getDate() : 1)
+  const initialDate = value || "2000-01-01"
+  const [year, setYear] = useState(() => new Date(initialDate).getFullYear())
+  const [month, setMonth] = useState(() => new Date(initialDate).getMonth() + 1)
+  const [day, setDay] = useState(() => new Date(initialDate).getDate())
   const [showYearPicker, setShowYearPicker] = useState(false)
+
+  // 当外部value变化时更新内部状态
+  useEffect(() => {
+    if (value) {
+      const d = new Date(value)
+      setYear(d.getFullYear())
+      setMonth(d.getMonth() + 1)
+      setDay(d.getDate())
+    }
+  }, [value])
 
   const handleQuickYear = (selectedYear: number) => {
     setYear(selectedYear)
@@ -310,7 +321,7 @@ function analyzeDestiny(bazi: ReturnType<typeof calculateBazi>) {
 }
 
 export default function BaziPage() {
-  const [birthDate, setBirthDate] = useState("")
+  const [birthDate, setBirthDate] = useState("2000-01-01")
   const [birthHour, setBirthHour] = useState(23)
   const [gender, setGender] = useState<"male" | "female">("male")
   const [isLoading, setIsLoading] = useState(false)
