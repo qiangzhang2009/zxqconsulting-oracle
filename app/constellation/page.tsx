@@ -268,6 +268,8 @@ export default function ConstellationPage() {
     aiAnalysis: string
   } | null>(null)
   const [isAnalyzingAI, setIsAnalyzingAI] = useState(false)
+  const [simpleExplanation, setSimpleExplanation] = useState<string>("")
+  const [isExplaining, setIsExplaining] = useState(false)
 
   const handleCalculate = async () => {
     if (!birthDate) return
@@ -339,6 +341,55 @@ export default function ConstellationPage() {
     setIsLoading(false)
     setShowCelebration(true)
     setShowResult(true)
+  }
+
+  // 获取通俗解读
+  const handleGetSimpleExplanation = async () => {
+    if (!result || !result.aiAnalysis) return
+    
+    setIsExplaining(true)
+    setSimpleExplanation("")
+
+    try {
+      const prompt = `你是一位通俗易懂的星座大师。刚才你为一个用户进行了深奥的星座分析，现在用户表示看不懂，请你用最简单、直白、接地气的语言，把刚才的星座分析解释给用户听。
+
+刚才的星座分析原文：
+${result.aiAnalysis}
+
+要求：
+1. 用最通俗的大白话解释，像朋友聊天一样
+2. 告诉用户这个星座对他/她的性格特点、感情、工作具体有什么影响
+3. 重点说清楚：性格优点、需要注意什么、适合做什么
+4. 保持神秘感但要让人听得懂
+5. 150-200字左右
+6. 格式用【通俗解读】作为标题
+
+请开始解读：`
+
+      const response = await fetch('/api/ai/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'constellation',
+          input: { birthDate, constellation: result.constellation.name },
+          result: { 
+            name: result.constellation.name,
+            symbol: result.constellation.symbol,
+            date: result.constellation.date,
+            birthDate: birthDate,
+            prompt: prompt
+          }
+        })
+      })
+      const data = await response.json()
+      if (data.analysis) {
+        setSimpleExplanation(data.analysis)
+      }
+    } catch (error) {
+      console.error('通俗解读错误:', error)
+    } finally {
+      setIsExplaining(false)
+    }
   }
 
   const handleShare = () => {
@@ -456,6 +507,51 @@ export default function ConstellationPage() {
                 )}
               </CardContent>
             </Card>
+
+            {/* 通俗解读按钮 */}
+            {!simpleExplanation && !isExplaining && result?.aiAnalysis && (
+              <Button
+                onClick={handleGetSimpleExplanation}
+                className="w-full h-12 bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                帮我解读（通俗版）
+              </Button>
+            )}
+
+            {/* 通俗解读内容 */}
+            {(simpleExplanation || isExplaining) && (
+              <Card className="border-pink-500/30 bg-gradient-to-br from-pink-900/30 to-rose-900/30 backdrop-blur-xl">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-white">
+                    <Sparkles className="w-5 h-5 text-pink-400" />
+                    通俗解读
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {isExplaining ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="text-center">
+                        <Loader2 className="w-8 h-8 text-pink-400 animate-spin mx-auto mb-3" />
+                        <p className="text-white/60">正在用大白话解释...</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="prose prose-invert max-w-none">
+                      {simpleExplanation.split('\n').map((line, i) => {
+                        if (line.match(/^【.+】$/)) {
+                          return <h4 key={i} className="text-pink-300 font-semibold mt-4 mb-2 text-base">{line}</h4>
+                        }
+                        if (line.trim()) {
+                          return <p key={i} className="text-white/80 leading-7 text-sm mb-2">{line}</p>
+                        }
+                        return null
+                      })}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
             {/* 神秘分隔语 */}
             <div className="text-center py-4">

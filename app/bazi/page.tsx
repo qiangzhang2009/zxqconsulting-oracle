@@ -221,6 +221,8 @@ export default function BaziPage() {
   const [result, setResult] = useState<ReturnType<typeof calculateBazi> | null>(null)
   const [aiAnalysis, setAiAnalysis] = useState<string>("")
   const [isAnalyzingAI, setIsAnalyzingAI] = useState(false)
+  const [simpleExplanation, setSimpleExplanation] = useState<string>("")
+  const [isExplaining, setIsExplaining] = useState(false)
 
   const handleCalculate = async () => {
     if (!birthDate) return
@@ -279,6 +281,59 @@ export default function BaziPage() {
     } finally {
       setIsAnalyzingAI(false)
       setIsLoading(false)
+    }
+  }
+
+  // 获取通俗解读
+  const handleGetSimpleExplanation = async () => {
+    if (!result || !aiAnalysis) return
+    
+    setIsExplaining(true)
+    setSimpleExplanation("")
+
+    try {
+      const prompt = `你是一位通俗易懂的命理大师。刚才你为一个用户进行了深奥的八字命理分析，现在用户表示看不懂，请你用最简单、直白、接地气的语言，把刚才的命理分析解释给用户听。
+
+刚才的八字分析原文：
+${aiAnalysis}
+
+要求：
+1. 用最通俗的大白话解释，像朋友聊天一样
+2. 告诉用户这个命理对他/她的生活具体有什么影响
+3. 重点说清楚：性格特点、适合做什么、需要注意什么
+4. 保持神秘感但要让人听得懂
+5. 150-200字左右
+6. 格式用【通俗解读】作为标题
+
+请开始解读：`
+
+      const response = await fetch('/api/ai/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'bazi',
+          input: { birthDate, birthTime: `${birthHour}:00`, gender },
+          result: { 
+            yearGan: result.yearGan,
+            yearZhi: result.yearZhi,
+            monthGan: result.monthGan,
+            monthZhi: result.monthZhi,
+            dayGan: result.dayGan,
+            dayZhi: result.dayZhi,
+            hourGan: result.hourGan,
+            hourZhi: result.hourZhi,
+            prompt: prompt
+          }
+        })
+      })
+      const data = await response.json()
+      if (data.analysis) {
+        setSimpleExplanation(data.analysis)
+      }
+    } catch (error) {
+      console.error('通俗解读错误:', error)
+    } finally {
+      setIsExplaining(false)
     }
   }
 
@@ -487,6 +542,51 @@ export default function BaziPage() {
                 )}
               </CardContent>
             </Card>
+
+            {/* 通俗解读按钮 */}
+            {!simpleExplanation && !isExplaining && aiAnalysis && (
+              <Button
+                onClick={handleGetSimpleExplanation}
+                className="w-full h-12 bg-gradient-to-r from-amber-600/80 to-orange-600/80 hover:from-amber-600 hover:to-orange-600 text-white rounded-xl"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                帮我解读（通俗版）
+              </Button>
+            )}
+
+            {/* 通俗解读内容 */}
+            {(simpleExplanation || isExplaining) && (
+              <Card className="border-green-500/30 bg-gradient-to-br from-green-900/30 to-emerald-900/30 backdrop-blur-xl">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-white">
+                    <Sparkles className="w-5 h-5 text-green-400" />
+                    通俗解读
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {isExplaining ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="text-center">
+                        <Loader2 className="w-8 h-8 text-green-400 animate-spin mx-auto mb-3" />
+                        <p className="text-white/60">正在用大白话解释...</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="prose prose-invert max-w-none">
+                      {simpleExplanation.split('\n').map((line, i) => {
+                        if (line.match(/^【.+】$/)) {
+                          return <h4 key={i} className="text-green-300 font-semibold mt-4 mb-2 text-base">{line}</h4>
+                        }
+                        if (line.trim()) {
+                          return <p key={i} className="text-white/80 leading-7 text-sm mb-2">{line}</p>
+                        }
+                        return null
+                      })}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
             {/* 神秘分隔语 */}
             <div className="text-center py-4">

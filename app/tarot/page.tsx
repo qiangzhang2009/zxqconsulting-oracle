@@ -149,18 +149,6 @@ export default function TarotPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-white/10 bg-white/5 backdrop-blur-sm">
-              <CardContent className="p-6 text-center">
-                <h3 className="text-lg font-semibold mb-2">深度解读</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  升级VIP获得更详细的牌义解读
-                </p>
-                <Button className="bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700">
-                  立即解锁 (¥29/月)
-                </Button>
-              </CardContent>
-            </Card>
-
             <div className="flex gap-4">
               <Button 
                 variant="outline" 
