@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Sparkles, ArrowLeft, Star, Sparkle, Loader2, Share2, RefreshCw, Heart, Lock, Unlock, ChevronRight, Zap } from "lucide-react"
+import { Sparkles, ArrowLeft, Star, Sparkle, Loader2, Share2, RefreshCw, Heart, Lock, Unlock, ChevronRight, Zap, Wand2 } from "lucide-react"
 import Link from "next/link"
 
 // 十二星座数据
@@ -22,7 +22,6 @@ const CONSTELLATIONS = [
   { name: "双鱼座", symbol: "♓", date: "2.19-3.20", element: "水", mode: "变动", color: "#1ABC9C" },
 ]
 
-// 快速选择年份
 const QUICK_YEARS = [
   { label: "今年", value: new Date().getFullYear() },
   { label: "去年", value: new Date().getFullYear() - 1 },
@@ -52,141 +51,13 @@ function getConstellation(month: number, day: number): typeof CONSTELLATIONS[0] 
   return CONSTELLATIONS[0]
 }
 
-// 更丰富的运势数据
-function getFortune(constellation: string, date: Date) {
-  const fortunes: Record<string, any> = {
-    "白羊座": { 
-      overall: "今天你的能量充沛，行动力十足！火星给予你勇气和活力，适合开展新项目或做出重要决定。保持积极的心态，好运自然会来找你。", 
-      love: "单身者有望在社交场合遇到心动对象，已有伴侣者感情升温。",
-      career: "工作上适合主动出击，展现你的领导才能。团队中你的创意会受到认可。",
-      wealth: "财运不错，可能有意外收获，但要避免冲动消费。投资方面可关注火象相关行业。",
-      health: "精力充沛，但要注意休息，避免过度劳累。适合运动锻炼。",
-      luckyColor: "红色", luckyNumber: 7, tip: "相信直觉，勇敢迈出第一步",
-      personality: "你是一个充满热情和活力的人，具有强烈的领导才能和进取心。"
-    },
-    "金牛座": { 
-      overall: "今天适合稳扎稳打，享受生活的美好。金星的守护让你魅力四射，财运也相当不错。放慢脚步，感受当下的幸福。", 
-      love: "感情稳定，适合与伴侣规划未来。单身者可能会有相亲或介绍的机会。",
-      career: "工作顺利，你的耐心和细心会受到赞赏。可能会有意外的好消息。",
-      wealth: "偏财运佳，可以关注一下投资机会。财运来自于稳定的收入增长。",
-      health: "注意饮食均衡，财运好的时候容易放纵口腹之欲。",
-      luckyColor: "绿色", luckyNumber: 6, tip: "耐心等待，美好即将到来",
-      personality: "你稳重务实，追求高品质生活，具有艺术鉴赏力。"
-    },
-    "双子座": { 
-      overall: "今天思维活跃，创意无限！多与人交流沟通，会给你带来意想不到的灵感。保持好奇心，探索未知领域。", 
-      love: "社交活跃，桃花运上升，容易结识新朋友。已有伴侣者要注意沟通。",
-      career: "适合需要创意和沟通的工作。可能有合作机会找上门。",
-      wealth: "财运平稳，注意控制支出。偏财运来自创意变现。",
-      health: "注意用眼过度，适当休息。思维活跃时要保证睡眠。",
-      luckyColor: "黄色", luckyNumber: 3, tip: "分享你的想法，获得更多支持",
-      personality: "你聪明机智，善于沟通，具有多方面的才能和兴趣。"
-    },
-    "巨蟹座": { 
-      overall: "今天适合关注家庭和情感。月亮的影响让你变得感性，与家人朋友的联系会更加紧密。给自己一些独处的时间也很好。", 
-      love: "家庭氛围和谐，单身者可接受家人介绍。适合表白或确定关系。",
-      career: "工作平稳，不宜冒险。适合处理需要细心的工作。",
-      wealth: "财运普通，适宜储蓄。财务状况稳定但无大起伏。",
-      health: "情绪波动较大，需要关注心理健康，适当放松。",
-      luckyColor: "银色", luckyNumber: 2, tip: "关爱自己，善待身边的人",
-      personality: "你温柔细腻，重情重义，具有强烈的家庭观念。"
-    },
-    "狮子座": { 
-      overall: "今天你是主角！太阳的光辉照耀着你，展现自我的时候到了。自信和魅力会为你带来好运，抓住机会发光发热。", 
-      love: "自信满满，桃花运旺盛，容易成为焦点。适合表白或公开恋情。",
-      career: "领导能力得到体现，适合主导项目。会有升职或加薪的可能。",
-      wealth: "正财运佳，可能有加薪或奖励。偏财运也不错。",
-      health: "精力旺盛，但要注意适当休息，避免过度消耗。",
-      luckyColor: "金色", luckyNumber: 1, tip: "展现你的热情，感染周围的人",
-      personality: "你自信大方，具有领袖气质，喜欢成为焦点人物。"
-    },
-    "处女座": { 
-      overall: "今天适合处理细节和规划。水星的加持让你思维清晰，工作效率提升。注意劳逸结合，保持身心健康。", 
-      love: "对感情要求较高，但缘分天注定。遇到合适的人要主动把握。",
-      career: "工作细致入微，获得上级认可。适合处理需要精准的工作。",
-      wealth: "财运平稳，适合规划理财。会有意外的小收入。",
-      health: "注意肠胃健康，饮食要规律。适当运动增强体质。",
-      luckyColor: "白色", luckyNumber: 5, tip: "完美主义者也要学会放松",
-      personality: "你追求完美，注重细节，具有很强的分析能力和批判性思维。"
-    },
-    "天秤座": { 
-      overall: "今天人际关系和谐是你的优势。金星的守护让你更具魅力，艺术灵感丰富，适合发挥创造力。", 
-      love: "社交活动丰富，容易遇到有缘人。已有伴侣者感情甜蜜。",
-      career: "适合协调和艺术类工作。会有合作或签约的好消息。",
-      wealth: "财运上升，可能有礼物或惊喜。偏财运较好。",
-      health: "注意保持工作与生活的平衡，避免过度社交。",
-      luckyColor: "粉色", luckyNumber: 4, tip: "平衡是生活的艺术",
-      personality: "你优雅公正，追求和谐，具有很强的社交能力和艺术品味。"
-    },
-    "天蝎座": { 
-      overall: "今天直觉敏锐，洞察力增强。冥王星的力量让你更加深入地探索事物本质，适合研究和分析工作。", 
-      love: "感情运势强烈，容易陷入热恋。单身者可能会遇到命中注定的人。",
-      career: "适合需要洞察力的工作。会有意外的好机会。",
-      wealth: "偏财运佳，可能有意外收获。投资眼光独到。",
-      health: "注意控制情绪，避免极端。适合冥想或瑜伽放松。",
-      luckyColor: "深红色", luckyNumber: 8, tip: "跟随内心的直觉",
-      personality: "你神秘莫测，具有很强的意志力和洞察力，感情强烈而深刻。"
-    },
-    "射手座": { 
-      overall: "今天活力十足，乐观积极！木星赐予你好运，适合运动、旅行和学习新事物。思想开阔，会有新的领悟。", 
-      love: "心态开放，桃花运不错。适合异地恋或旅行中认识新人。",
-      career: "适合拓展和冒险类工作。会有新的发展方向。",
-      wealth: "财运波动，谨慎投资。偏财运来自旅行或教育。",
-      health: "活力充沛，适合户外运动。注意安全，避免冒险行为。",
-      luckyColor: "紫色", luckyNumber: 9, tip: "走出去，世界很大",
-      personality: "你热情开朗，追求自由，具有冒险精神和乐观积极的态度。"
-    },
-    "摩羯座": { 
-      overall: "今天事业心强，适合规划未来。土星给你稳定的力量，脚踏实地的努力会有回报。耐心是成功的关键。", 
-      love: "感情内敛，需要主动表达。合适的人可能已经在你身边。",
-      career: "工作运势旺盛，地位有望提升。会有重要的项目或机会。",
-      wealth: "正财运稳定，适合长期投资。财富会稳步增长。",
-      health: "注意劳逸结合，工作再忙也要照顾好身体。",
-      luckyColor: "深灰色", luckyNumber: 4, tip: "坚持就是胜利",
-      personality: "你稳重踏实，野心勃勃，具有很强的责任感和事业心。"
-    },
-    "水瓶座": { 
-      overall: "今天创意十足，独具慧眼。天王星激发你的创新思维，适合打破常规，展现独特的想法。", 
-      love: "追求自由，但也要珍惜眼前人。合适的人需要你主动去发现。",
-      career: "适合创意和科技类工作。会有颠覆性的想法或项目。",
-      wealth: "财运平稳，注意理财。收入可能有突破性增长。",
-      health: "注意头部和神经系统的休息，避免用脑过度。",
-      luckyColor: "天蓝色", luckyNumber: 3, tip: "与众不同是你的魅力",
-      personality: "你独立创新，思维超前，具有人道主义精神和独特的个人魅力。"
-    },
-    "双鱼座": { 
-      overall: "今天感性丰富，想象力爆棚！海王星给你灵感和创意，艺术创作运势极佳。跟随梦想前行。", 
-      love: "感情丰富，容易遇到浪漫邂逅。已有伴侣者要注意界限。",
-      career: "艺术创作运势佳。适合音乐、绘画、写作等创作工作。",
-      wealth: "财运一般，需要开源节流。偏财运来自艺术相关。",
-      health: "情绪敏感，需要自我调节。适合艺术疗愈。",
-      luckyColor: "海蓝色", luckyNumber: 7, tip: "保持纯真，梦想会成真",
-      personality: "你浪漫敏感，富有想象力，具有艺术天赋和同理心。"
-    },
-  }
-  
-  const baseFortune = fortunes[constellation] || fortunes["白羊座"]
-  const dayOfYear = Math.floor((date.getTime() - new Date(date.getFullYear(), 0, 0).getTime()) / 86400000)
-  const variation = dayOfYear % 3
-  
-  return {
-    ...baseFortune,
-    overall: baseFortune.overall + (variation === 0 ? " ✨ 今天有特别的惊喜等着你！" : variation === 1 ? " 💫 保持开放的心态，好运连连！" : " 🌟 相信奇迹会发生！"),
-    rank: (dayOfYear % 12) + 1,
-    // 附加的神秘信息
-    secretTip: ["今天会遇到贵人", "留意身边的巧合", "相信自己的直觉", "会有意外惊喜", "适合做出承诺"][dayOfYear % 5],
-    luckyTime: ["上午9-11点", "下午2-4点", "晚上7-9点", "深夜11点"][dayOfYear % 4],
-    compatibleSign: CONSTELLATIONS[(dayOfYear % 12 + 3) % 12].name,
-  }
-}
-
 // 庆祝动画组件
 function CelebrationEffect({ onComplete }: { onComplete?: () => void }) {
   const [particles, setParticles] = useState<Array<{id: number, x: number, y: number, emoji: string}>>([])
   
   useEffect(() => {
-    const emojis = ["✨", "⭐", "💫", "🌟", "💖", "🎉", "🔮", "🌙"]
-    const newParticles = Array.from({ length: 40 }, (_, i) => ({
+    const emojis = ["✨", "⭐", "💫", "🌟", "💖", "🎉", "🔮", "🌙", "🪐", "🌙"]
+    const newParticles = Array.from({ length: 50 }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
       y: Math.random() * 100,
@@ -196,7 +67,7 @@ function CelebrationEffect({ onComplete }: { onComplete?: () => void }) {
     
     const timer = setTimeout(() => {
       onComplete?.()
-    }, 2500)
+    }, 3000)
     
     return () => clearTimeout(timer)
   }, [])
@@ -250,7 +121,6 @@ function DatePicker({ value, onChange }: { value: string; onChange: (date: strin
   const [day, setDay] = useState(() => new Date(initialDate).getDate())
   const [showYearPicker, setShowYearPicker] = useState(false)
 
-  // 当外部value变化时更新内部状态
   useEffect(() => {
     if (value) {
       const d = new Date(value)
@@ -375,13 +245,14 @@ function DatePicker({ value, onChange }: { value: string; onChange: (date: strin
 }
 
 export default function ConstellationPage() {
-  const [birthDate, setBirthDate] = useState("2000-01-01")  // 默认日期
+  const [birthDate, setBirthDate] = useState("2000-01-01")
   const [isLoading, setIsLoading] = useState(false)
   const [showResult, setShowResult] = useState(false)
   const [showCelebration, setShowCelebration] = useState(false)
   const [result, setResult] = useState<{
     constellation: typeof CONSTELLATIONS[0]
-    fortune: ReturnType<typeof getFortune>
+    birthDate: string
+    aiAnalysis: string
   } | null>(null)
 
   const handleCalculate = async () => {
@@ -390,16 +261,52 @@ export default function ConstellationPage() {
     setIsLoading(true)
     setShowResult(false)
     
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
     const date = new Date(birthDate)
     const month = date.getMonth() + 1
     const day = date.getDate()
     
     const constellation = getConstellation(month, day)
-    const fortune = getFortune(constellation.name, date)
+
+    try {
+      // 调用AI分析接口
+      const response = await fetch('/api/ai/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: 'constellation',
+          input: {
+            birthDate: birthDate,
+            constellation: constellation.name,
+          },
+          result: {
+            name: constellation.name,
+            symbol: constellation.symbol,
+            date: constellation.date,
+            element: constellation.element,
+            mode: constellation.mode,
+            birthDate: birthDate,
+          }
+        })
+      })
+
+      const data = await response.json()
+      
+      setResult({ 
+        constellation, 
+        birthDate,
+        aiAnalysis: data.analysis || 'AI分析生成中...'
+      })
+    } catch (error) {
+      console.error('AI分析错误:', error)
+      setResult({ 
+        constellation, 
+        birthDate,
+        aiAnalysis: '抱歉，AI分析暂时无法生成，请稍后再试。'
+      })
+    }
     
-    setResult({ constellation, fortune })
     setIsLoading(false)
     setShowCelebration(true)
     setShowResult(true)
@@ -409,13 +316,32 @@ export default function ConstellationPage() {
     if (navigator.share && result) {
       navigator.share({
         title: `我的星座是${result.constellation.name}`,
-        text: `我是${result.constellation.name}，今日运势排名第${result.fortune.rank}位！${result.fortune.tip}`,
+        text: `我是${result.constellation.name}，AI深度解析你的命运！`,
         url: window.location.href,
       })
     } else {
-      navigator.clipboard.writeText(`我是${result?.constellation.name}，今日运势排名第${result?.fortune.rank}位！${result?.fortune.tip}`)
+      navigator.clipboard.writeText(`我是${result?.constellation.name}，AI深度解析你的命运！`)
       alert("已复制到剪贴板！")
     }
+  }
+
+  // 解析AI返回的分析内容
+  const parseAnalysis = (analysis: string) => {
+    const sections: Record<string, string> = {}
+    const lines = analysis.split('\n')
+    let currentKey = ''
+    
+    lines.forEach(line => {
+      const match = line.match(/【(.+?)】/)
+      if (match) {
+        currentKey = match[1]
+        sections[currentKey] = line.replace(/【.+?】/, '').trim()
+      } else if (currentKey && line.trim()) {
+        sections[currentKey] += '\n' + line.trim()
+      }
+    })
+    
+    return sections
   }
 
   return (
@@ -439,11 +365,11 @@ export default function ConstellationPage() {
           <Card className="max-w-xl mx-auto border-white/10 bg-white/10 backdrop-blur-xl">
             <CardHeader className="text-center">
               <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center mb-4">
-                <Star className="w-10 h-10 text-white" />
+                <Wand2 className="w-10 h-10 text-white" />
               </div>
-              <CardTitle className="font-serif text-2xl text-white">探索你的星座</CardTitle>
+              <CardTitle className="font-serif text-2xl text-white">AI智能星座解析</CardTitle>
               <CardDescription className="text-white/70">
-                输入出生日期，解密你的命运密码
+                DeepSeek AI 深度分析你的命运密码
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -460,18 +386,18 @@ export default function ConstellationPage() {
                 {isLoading ? (
                   <>
                     <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    正在探索你的命运...
+                    AI正在深度分析中...
                   </>
                 ) : (
                   <>
-                    <Sparkle className="w-5 h-5 mr-2" />
-                    立即探索
+                    <Wand2 className="w-5 h-5 mr-2" />
+                    开始AI解析
                   </>
                 )}
               </Button>
               
               <p className="text-xs text-center text-white/50">
-                🚀 测试期无限次 · AI深度分析 · 准到离谱
+                🚀 测试期无限次 · DeepSeek AI · 精准分析
               </p>
             </CardContent>
           </Card>
@@ -506,133 +432,46 @@ export default function ConstellationPage() {
               </CardHeader>
             </Card>
 
-            {/* 运势排名 */}
-            <Card className="border-yellow-500/30 bg-gradient-to-r from-yellow-500/20 to-amber-500/20 backdrop-blur-xl">
-              <CardContent className="p-6 text-center">
-                <div className="flex items-center justify-center gap-2 text-yellow-400 mb-2">
-                  <Zap className="w-5 h-5" />
-                  <span className="text-sm font-medium">今日运势排名</span>
-                </div>
-                <div className="text-5xl font-bold text-yellow-400">第 {result?.fortune.rank} 名</div>
-                <div className="text-white/60 mt-2">超越全国{((12 - (result?.fortune.rank || 1)) / 12 * 100).toFixed(0)}%的星座</div>
-              </CardContent>
-            </Card>
-
-            {/* 今日运势 */}
-            <Card className="border-white/20 bg-white/10 backdrop-blur-xl">
+            {/* AI分析结果 */}
+            <Card className="border-purple-500/30 bg-gradient-to-r from-purple-500/20 to-blue-500/20 backdrop-blur-xl">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-white">
-                  <Sparkles className="w-5 h-5 text-yellow-400" />
-                  今日运势解析
+                  <Wand2 className="w-5 h-5 text-purple-400" />
+                  AI深度分析
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-white/90 leading-relaxed text-lg">
-                  {result?.fortune.overall}
-                </p>
-                <div className="p-4 rounded-xl bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30">
-                  <div className="flex items-center gap-2 text-purple-400 mb-2">
-                    <Sparkle className="w-4 h-4" />
-                    <span className="text-sm font-medium">今日建议</span>
-                  </div>
-                  <div className="text-white/90">{result?.fortune.tip}</div>
+              <CardContent>
+                <div className="prose prose-invert max-w-none">
+                  {result?.aiAnalysis.split('\n').map((line, i) => {
+                    if (line.match(/^【.+】$/)) {
+                      return <h4 key={i} className="text-purple-400 font-semibold mt-4 mb-2">{line}</h4>
+                    }
+                    if (line.trim()) {
+                      return <p key={i} className="text-white/80 leading-relaxed mb-2">{line}</p>
+                    }
+                    return null
+                  })}
                 </div>
               </CardContent>
             </Card>
 
-            {/* 详细运势 - 免费解锁 */}
+            {/* 付费解锁 */}
             <Card className="border-white/20 bg-white/5 backdrop-blur-xl">
               <CardHeader className="text-center pb-2">
                 <CardTitle className="text-white flex items-center justify-center gap-2">
                   <Lock className="w-4 h-4 text-purple-400" />
-                  详细运势分析
+                  解锁完整运势
                 </CardTitle>
                 <CardDescription className="text-white/50">
-                  解锁查看完整的事业、财运、爱情、健康分析
+                  包含事业、财运、爱情、健康等详细分析
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {/* 隐藏的内容预览 */}
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="p-4 rounded-xl bg-white/5 border border-white/10 opacity-50">
-                    <div className="flex items-center gap-2 text-rose-400 mb-2">
-                      <Heart className="w-4 h-4" />
-                      <span className="text-sm font-medium">爱情运</span>
-                    </div>
-                    <p className="text-white/60 text-sm blur-sm">{result?.fortune.love}</p>
-                  </div>
-                  <div className="p-4 rounded-xl bg-white/5 border border-white/10 opacity-50">
-                    <div className="flex items-center gap-2 text-blue-400 mb-2">
-                      <Star className="w-4 h-4" />
-                      <span className="text-sm font-medium">事业运</span>
-                    </div>
-                    <p className="text-white/60 text-sm blur-sm">{result?.fortune.career}</p>
-                  </div>
-                  <div className="p-4 rounded-xl bg-white/5 border border-white/10 opacity-50">
-                    <div className="flex items-center gap-2 text-yellow-400 mb-2">
-                      <Sparkle className="w-4 h-4" />
-                      <span className="text-sm font-medium">财运</span>
-                    </div>
-                    <p className="text-white/60 text-sm blur-sm">{result?.fortune.wealth}</p>
-                  </div>
-                  <div className="p-4 rounded-xl bg-white/5 border border-white/10 opacity-50">
-                    <div className="flex items-center gap-2 text-green-400 mb-2">
-                      <Sparkles className="w-4 h-4" />
-                      <span className="text-sm font-medium">健康运</span>
-                    </div>
-                    <p className="text-white/60 text-sm blur-sm">{result?.fortune.health}</p>
-                  </div>
-                </div>
-
-                {/* 解锁按钮 */}
+              <CardContent>
                 <Button className="w-full h-12 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
                   <Unlock className="w-4 h-4 mr-2" />
-                  解锁完整运势分析
+                  立即解锁完整版
                   <ChevronRight className="w-4 h-4 ml-2" />
                 </Button>
-              </CardContent>
-            </Card>
-
-            {/* 幸运元素 */}
-            <Card className="border-white/20 bg-white/10 backdrop-blur-xl">
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold text-white mb-4 text-center">今日幸运元素</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center p-4 rounded-xl bg-white/5">
-                    <div className="text-sm text-white/60 mb-1">幸运颜色</div>
-                    <div className="text-xl font-bold" style={{ color: result?.constellation.color }}>
-                      {result?.fortune.luckyColor}
-                    </div>
-                  </div>
-                  <div className="text-center p-4 rounded-xl bg-white/5">
-                    <div className="text-sm text-white/60 mb-1">幸运数字</div>
-                    <div className="text-xl font-bold text-yellow-400">{result?.fortune.luckyNumber}</div>
-                  </div>
-                  <div className="text-center p-4 rounded-xl bg-white/5">
-                    <div className="text-sm text-white/60 mb-1">幸运时段</div>
-                    <div className="text-lg font-bold text-blue-400">{result?.fortune.luckyTime}</div>
-                  </div>
-                  <div className="text-center p-4 rounded-xl bg-white/5">
-                    <div className="text-sm text-white/60 mb-1">幸运星座</div>
-                    <div className="text-lg font-bold text-purple-400">{result?.fortune.compatibleSign}</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* 性格分析 */}
-            <Card className="border-blue-500/30 bg-blue-500/10 backdrop-blur-xl">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-blue-400">
-                  <Sparkles className="w-5 h-5" />
-                  性格特点
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-white/80 leading-relaxed">{result?.fortune.personality}</p>
-                <div className="mt-4 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
-                  <div className="text-sm text-blue-300">🔮 {result?.fortune.secretTip}</div>
-                </div>
               </CardContent>
             </Card>
 
@@ -644,7 +483,7 @@ export default function ConstellationPage() {
                 className="flex-1 h-12 border-white/20 text-white hover:bg-white/10"
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
-                再测一次
+                重新解析
               </Button>
               <Button 
                 onClick={handleShare}

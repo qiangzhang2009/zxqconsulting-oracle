@@ -63,23 +63,23 @@ export async function generateBaziAnalysis(data: FortuneData): Promise<string> {
 出生信息：
 - 出生日期：${birthDate}
 - 出生时辰：${birthTime}
-- 性别：${gender}
+- 性别：${gender === 'male' ? '男' : '女'}
 
 八字排盘：
-- 年柱：${result.year?.gan}${result.year?.zhi}
-- 月柱：${result.month?.gan}${result.month?.zhi}
-- 日柱：${result.day?.gan}${result.day?.zhi}
-- 时柱：${result.hour?.gan}${result.hour?.zhi}
+- 年柱：${result.yearGan}${result.yearZhi}
+- 月柱：${result.monthGan}${result.monthZhi}
+- 日柱：${result.dayGan}${result.dayZhi}
+- 时柱：${result.hourGan}${result.hourZhi}
 
 请从以下几个维度进行解读：
-1. 命主性格分析
-2. 事业运势
+1. 命主性格分析（根据日主五行分析）
+2. 事业运势发展建议
 3. 财运分析
-4. 感情婚姻
-5. 健康建议
-6. 2024年运势展望
+4. 感情婚姻状况
+5. 健康养生建议
+6. 未来运势展望
 
-请用温暖、专业、易懂的语言进行解读，字数约500字。`
+请用温暖、专业、易懂的语言进行解读，字数约500字。格式请使用【】标注每个部分的小标题。`
 
   const aiResult = await callDeepSeek(prompt)
   if (aiResult) return aiResult
@@ -96,23 +96,20 @@ export async function generateConstellationAnalysis(data: FortuneData): Promise<
 星座：${constellation}
 出生日期：${birthDate}
 
-基础运势：
-- 整体运势：${result.overall}
-- 爱情运势：${result.love}
-- 事业运势：${result.career}
-- 财运运势：${result.wealth}
-- 幸运颜色：${result.luckyColor}
-- 幸运数字：${result.luckyNumber}
+星座属性：
+- 星座符号：${result.symbol}
+- 元素属性：${result.element}象
+- 星座模式：${result.mode}
 
 请从以下几个维度进行深入解读：
-1. 本周整体运势分析
+1. 整体运势分析（本月/本周）
 2. 事业学业发展建议
 3. 感情人际关系提示
 4. 财运投资方向
 5. 健康生活建议
-6. 下周幸运提示
+6. 幸运元素（颜色、数字、方位）
 
-请用专业、温暖的语言进行解读，字数约400字。`
+请用专业、温暖的语言进行解读，字数约500字。格式请使用【】标注每个部分的小标题。`
 
   const aiResult = await callDeepSeek(prompt)
   if (aiResult) return aiResult
