@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Sparkles, ArrowLeft, Calendar, Clock, User, Loader2, Share2, RefreshCw, Gem, Crown, Lock, Unlock, ChevronRight, Zap } from "lucide-react"
+import { Sparkles, ArrowLeft, Calendar, Clock, User, Loader2, Share2, RefreshCw, Gem, Crown, Lock, Unlock, ChevronRight, Zap, Heart } from "lucide-react"
 import Link from "next/link"
 import { LoadingAnimation, ButtonLoading } from "@/components/loading-animation"
 
@@ -223,6 +223,8 @@ export default function BaziPage() {
   const [isAnalyzingAI, setIsAnalyzingAI] = useState(false)
   const [simpleExplanation, setSimpleExplanation] = useState<string>("")
   const [isExplaining, setIsExplaining] = useState(false)
+  const [isSaved, setIsSaved] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
 
   const handleCalculate = async () => {
     if (!birthDate) return
@@ -337,6 +339,43 @@ ${aiAnalysis}
     }
   }
 
+  // 保存八字记录到数据库
+  const handleSave = async () => {
+    if (!result || isSaved) return
+    
+    setIsSaving(true)
+    try {
+      const response = await fetch('/api/bazi', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          birthDate: birthDate,
+          birthTime: birthHour.toString(),
+          yearGan: result.yearGan,
+          yearZhi: result.yearZhi,
+          monthGan: result.monthGan,
+          monthZhi: result.monthZhi,
+          dayGan: result.dayGan,
+          dayZhi: result.dayZhi,
+          hourGan: result.hourGan,
+          hourZhi: result.hourZhi,
+          aiAnalysis: aiAnalysis,
+          simpleAnalysis: simpleExplanation
+        })
+      })
+      
+      const data = await response.json()
+      if (data.success) {
+        setIsSaved(true)
+        alert('已保存到你的八字记录中！')
+      }
+    } catch (error) {
+      console.error('保存错误:', error)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
   const handleShare = () => {
     if (result) {
       const text = `我已窥见天机：${result.yearGan}${result.yearZhi}年·${result.monthGan}${result.monthZhi}月·${result.dayGan}${result.dayZhi}日·${result.hourGan}${result.hourZhi}时。命运方舟，为你揭示人生密码！`
@@ -355,7 +394,7 @@ ${aiAnalysis}
 
   return (
     <div className="min-h-screen relative">
-      <div className="absolute inset-0 bg-gradient-to-b from-purple-950 via-indigo-950 to-background" />
+      <div className="absolute inset-0 bg-gradient-to-b from-stone-900 via-stone-800 to-stone-900" />
       
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {Array.from({ length: 30 }).map((_, i) => (
@@ -387,9 +426,9 @@ ${aiAnalysis}
         </div>
 
         {!result ? (
-          <Card className="max-w-xl mx-auto border-white/10 bg-white/10 backdrop-blur-xl">
+          <Card className="max-w-xl mx-auto border-stone-700 bg-stone-800/50 backdrop-blur-xl">
             <CardHeader className="text-center">
-              <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-br from-amber-400 to-purple-500 flex items-center justify-center mb-4">
+              <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-br from-red-600 to-amber-500 flex items-center justify-center mb-4 shadow-lg shadow-red-900/30">
                 <Gem className="w-10 h-10 text-white" />
               </div>
               <CardTitle className="font-serif text-2xl text-white">探索你的命运密码</CardTitle>
@@ -599,12 +638,36 @@ ${aiAnalysis}
             <div className="flex gap-4">
               <Button 
                 variant="outline" 
-                onClick={() => setResult(null)}
+                onClick={() => {
+                  setResult(null)
+                  setIsSaved(false)
+                }}
                 className="flex-1 h-12 border-white/20 text-white hover:bg-white/10"
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
                 重新推演
               </Button>
+              
+              {/* 保存按钮 */}
+              <Button 
+                onClick={handleSave}
+                disabled={isSaved || isSaving}
+                className={`flex-1 h-12 ${
+                  isSaved 
+                    ? 'bg-green-500 hover:bg-green-600' 
+                    : 'bg-gradient-to-r from-amber-500 to-orange-500'
+                }`}
+              >
+                {isSaving ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : isSaved ? (
+                  <Sparkles className="w-4 h-4 mr-2" />
+                ) : (
+                  <Heart className="w-4 h-4 mr-2" />
+                )}
+                {isSaved ? '已保存' : '保存记录'}
+              </Button>
+              
               <Button 
                 onClick={handleShare}
                 className="flex-1 h-12 bg-gradient-to-r from-amber-500 to-purple-500"

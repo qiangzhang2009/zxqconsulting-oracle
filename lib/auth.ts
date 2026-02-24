@@ -1,18 +1,8 @@
 import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
+import { PrismaClient } from "@prisma/client"
 
-// 简化版认证：不依赖 Notion，使用内存存储
-// 演示模式：任何手机号都可以直接登录
-
-interface DemoUser {
-  id: string
-  phone: string
-  name: string
-  createdAt: number
-}
-
-// 内存存储演示用户
-const demoUsers: Map<string, DemoUser> = new Map()
+const prisma = new PrismaClient()
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -20,7 +10,7 @@ export const authOptions: NextAuthOptions = {
       name: "手机号登录",
       credentials: {
         phone: { label: "手机号", type: "text", placeholder: "请输入手机号" },
-        code: { label: "验证码", type: "text", placeholder: "请输入验证码" }
+        code: { label: "验证码", type: "text", placeholder: "请输入验证码（测试期任意）" }
       },
       async authorize(credentials) {
         if (!credentials?.phone) {
@@ -29,23 +19,32 @@ export const authOptions: NextAuthOptions = {
 
         const phone = credentials.phone.trim()
         
-        // 查找或创建演示用户
-        let user = demoUsers.get(phone)
-        
-        if (!user) {
-          user = {
-            id: 'user-' + Date.now(),
-            phone: phone,
-            name: `用户${phone.slice(-4)}`,
-            createdAt: Date.now()
+        try {
+          // 查找用户
+          let user = await prisma.user.findUnique({
+            where: { phone }
+          })
+          
+          // 如果用户不存在，自动创建
+          if (!user) {
+            user = await prisma.user.create({
+              data: {
+                phone,
+                nickname: `用户${phone.slice(-4)}`,
+                email: `${phone}@zhiiji.com` // 虚拟邮箱
+              }
+            })
+            console.log('新用户注册:', user.id, phone)
           }
-          demoUsers.set(phone, user)
-        }
 
-        return {
-          id: user.id,
-          phone: user.phone,
-          name: user.name,
+          return {
+            id: user.id,
+            phone: user.phone,
+            name: user.nickname || `用户${phone.slice(-4)}`,
+          }
+        } catch (error) {
+          console.error('用户认证错误:', error)
+          return null
         }
       }
     })

@@ -93,19 +93,20 @@ function CelebrationEffect({ onComplete }: { onComplete?: () => void }) {
 }
 
 function StarField() {
+  const colors = ['rgba(139, 92, 246, 0.2)', 'rgba(244, 114, 182, 0.2)', 'rgba(251, 191, 36, 0.2)', 'rgba(96, 165, 250, 0.2)']
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {Array.from({ length: 50 }).map((_, i) => (
+      {Array.from({ length: 30 }).map((_, i) => (
         <div
           key={i}
           className="absolute animate-star-twinkle"
           style={{
             left: `${Math.random() * 100}%`,
             top: `${Math.random() * 100}%`,
-            width: Math.random() * 3 + 1,
-            height: Math.random() * 3 + 1,
+            width: Math.random() * 4 + 2,
+            height: Math.random() * 4 + 2,
             borderRadius: '50%',
-            backgroundColor: 'rgba(255, 255, 255, 0.3)',
+            backgroundColor: colors[Math.floor(Math.random() * colors.length)],
             animationDelay: `${Math.random() * 3}s`,
             animationDuration: `${Math.random() * 2 + 2}s`,
           }}
@@ -175,8 +176,8 @@ function DatePicker({ value, onChange }: { value: string; onChange: (date: strin
             onClick={() => handleQuickYear(q.value)}
             className={`px-3 py-1.5 rounded-full text-sm transition-all ${
               year === q.value 
-                ? "bg-purple-500 text-white" 
-                : "bg-white/10 text-white/70 hover:bg-white/20"
+                ? "bg-violet-400 text-white" 
+                : "bg-stone-100 text-stone-600 hover:bg-stone-200"
             }`}
           >
             {q.label}
@@ -185,14 +186,14 @@ function DatePicker({ value, onChange }: { value: string; onChange: (date: strin
         <button
           type="button"
           onClick={() => setShowYearPicker(!showYearPicker)}
-          className="px-3 py-1.5 rounded-full text-sm bg-white/10 text-white/70 hover:bg-white/20"
+          className="px-3 py-1.5 rounded-full text-sm bg-stone-100 text-stone-600 hover:bg-stone-200"
         >
           更多...
         </button>
       </div>
 
       {showYearPicker && (
-        <div className="bg-white/10 backdrop-blur-xl rounded-xl p-4 border border-white/20 max-h-48 overflow-y-auto">
+        <div className="bg-white backdrop-blur-xl rounded-xl p-4 border border-stone-200 max-h-48 overflow-y-auto shadow-lg">
           <div className="grid grid-cols-5 gap-2">
             {MORE_YEARS.map((y) => (
               <button
@@ -204,8 +205,8 @@ function DatePicker({ value, onChange }: { value: string; onChange: (date: strin
                 }}
                 className={`px-2 py-1 rounded text-sm transition-all ${
                   year === y 
-                    ? "bg-purple-500 text-white" 
-                    : "text-white/70 hover:bg-white/10"
+                    ? "bg-violet-400 text-white" 
+                    : "text-stone-600 hover:bg-stone-100"
                 }`}
               >
                 {y}
@@ -221,7 +222,7 @@ function DatePicker({ value, onChange }: { value: string; onChange: (date: strin
           <select
             value={year}
             onChange={(e) => handleQuickYear(Number(e.target.value))}
-            className="w-full h-12 px-3 rounded-xl bg-white/10 border border-white/20 text-white appearance-none cursor-pointer"
+            className="w-full h-12 px-3 rounded-xl bg-white border border-stone-200 text-stone-800 appearance-none cursor-pointer"
           >
             {MORE_YEARS.map((y) => (
               <option key={y} value={y} className="bg-gray-800">{y}</option>
@@ -233,7 +234,7 @@ function DatePicker({ value, onChange }: { value: string; onChange: (date: strin
           <select
             value={month}
             onChange={(e) => handleMonthChange(Number(e.target.value))}
-            className="w-full h-12 px-3 rounded-xl bg-white/10 border border-white/20 text-white appearance-none cursor-pointer"
+            className="w-full h-12 px-3 rounded-xl bg-white border border-stone-200 text-stone-800 appearance-none cursor-pointer"
           >
             {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
               <option key={m} value={m} className="bg-gray-800">{m}月</option>
@@ -245,7 +246,7 @@ function DatePicker({ value, onChange }: { value: string; onChange: (date: strin
           <select
             value={day}
             onChange={(e) => handleDayChange(Number(e.target.value))}
-            className="w-full h-12 px-3 rounded-xl bg-white/10 border border-white/20 text-white appearance-none cursor-pointer"
+            className="w-full h-12 px-3 rounded-xl bg-white border border-stone-200 text-stone-800 appearance-none cursor-pointer"
           >
             {Array.from({ length: maxDay }, (_, i) => i + 1).map((d) => (
               <option key={d} value={d} className="bg-gray-800">{d}日</option>
@@ -392,6 +393,9 @@ ${result.aiAnalysis}
     }
   }
 
+  const [isSaved, setIsSaved] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+
   const handleShare = () => {
     if (navigator.share && result) {
       navigator.share({
@@ -405,44 +409,77 @@ ${result.aiAnalysis}
     }
   }
 
+  // 保存星座记录到数据库
+  const handleSave = async () => {
+    if (!result || isSaved) return
+    
+    setIsSaving(true)
+    try {
+      const response = await fetch('/api/constellation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          birthDate: result.birthDate,
+          sunSign: result.constellation.name,
+          aiAnalysis: result.aiAnalysis,
+          simpleAnalysis: simpleExplanation,
+          readingType: 'natal',
+          source: 'free'
+        })
+      })
+      
+      const data = await response.json()
+      if (data.success) {
+        setIsSaved(true)
+        alert('已保存到你的星座记录中！')
+      } else {
+        console.error('保存失败:', data.error)
+      }
+    } catch (error) {
+      console.error('保存错误:', error)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
   return (
     <div className="min-h-screen relative">
-      <div className="absolute inset-0 bg-gradient-to-b from-blue-950 via-purple-950 to-background" />
+      <div className="absolute inset-0 bg-gradient-to-b from-stone-100 via-stone-50 to-white" />
       <StarField />
       
       <div className="relative z-10 container mx-auto px-4 py-8">
         <div className="flex items-center gap-4 mb-8">
           <Link href="/">
-            <Button variant="ghost" size="icon" className="text-white/80 hover:text-white">
+            <Button variant="ghost" size="icon" className="text-stone-600 hover:text-stone-800 hover:bg-stone-100">
               <ArrowLeft className="w-5 h-5" />
             </Button>
           </Link>
-          <h1 className="font-serif text-2xl font-bold text-white">星座解析</h1>
+          <h1 className="font-serif text-2xl font-bold text-stone-800">星座解析</h1>
         </div>
 
         {showCelebration && <CelebrationEffect onComplete={() => setShowCelebration(false)} />}
 
         {!showResult ? (
-          <Card className="max-w-xl mx-auto border-white/10 bg-white/10 backdrop-blur-xl">
+          <Card className="max-w-xl mx-auto border-stone-200 bg-white/80 backdrop-blur-xl shadow-lg shadow-stone-200/50">
             <CardHeader className="text-center">
-              <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center mb-4">
+              <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-br from-violet-300 to-rose-300 flex items-center justify-center mb-4 shadow-inner">
                 <Wand2 className="w-10 h-10 text-white" />
               </div>
-              <CardTitle className="font-serif text-2xl text-white">探索你的星辰密码</CardTitle>
-              <CardDescription className="text-white/70">
+              <CardTitle className="font-serif text-2xl text-stone-800">探索你的星辰密码</CardTitle>
+              <CardDescription className="text-stone-600">
                 星辰运转之间，命运已悄然改变
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-white/90">你的出生日期</label>
+                <label className="text-sm font-medium text-stone-700">你的出生日期</label>
                 <DatePicker value={birthDate} onChange={setBirthDate} />
               </div>
 
               <Button 
                 onClick={handleCalculate}
                 disabled={!birthDate || isLoading}
-                className="w-full h-14 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 text-lg font-semibold rounded-xl"
+                className="w-full h-14 bg-gradient-to-r from-violet-400 via-rose-400 to-amber-400 hover:from-violet-500 hover:via-rose-500 hover:to-amber-500 text-white text-lg font-semibold rounded-xl shadow-lg shadow-rose-200/50"
               >
                 {isLoading ? (
                   <>
@@ -457,7 +494,7 @@ ${result.aiAnalysis}
                 )}
               </Button>
               
-              <p className="text-xs text-center text-white/50">
+              <p className="text-xs text-center text-stone-400">
                 🚀 测试期无限次 · AI智能推演 · 星辰解密
               </p>
             </CardContent>
@@ -465,27 +502,27 @@ ${result.aiAnalysis}
         ) : (
           <div className="max-w-2xl mx-auto space-y-6 animate-fade-in-up">
             {/* 星座卡片 - 简洁神秘 */}
-            <Card className="border-white/20 bg-white/10 backdrop-blur-xl overflow-hidden">
+            <Card className="border-stone-200 bg-white shadow-xl shadow-stone-200/50 overflow-hidden">
               <div 
                 className="h-40 flex items-center justify-center relative"
-                style={{ background: 'linear-gradient(180deg, rgba(139, 92, 246, 0.2) 0%, transparent 100%)' }}
+                style={{ background: 'linear-gradient(180deg, rgba(139, 92, 246, 0.1) 0%, rgba(244, 114, 182, 0.1) 100%)' }}
               >
-                <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-white to-transparent" />
                 <div className="relative z-10 text-9xl animate-float">{result?.constellation.symbol}</div>
               </div>
               <CardHeader className="text-center -mt-8 relative z-10">
-                <CardTitle className="font-serif text-3xl text-white">{result?.constellation.name}</CardTitle>
-                <CardDescription className="text-white/60 text-lg">
+                <CardTitle className="font-serif text-3xl text-stone-800">{result?.constellation.name}</CardTitle>
+                <CardDescription className="text-stone-500 text-lg">
                   {result?.constellation.date}
                 </CardDescription>
               </CardHeader>
             </Card>
 
             {/* AI解读 - 神秘深邃 */}
-            <Card className="border-purple-500/30 bg-gradient-to-br from-purple-900/40 via-indigo-900/30 to-blue-900/40 backdrop-blur-xl">
+            <Card className="border-violet-200 bg-gradient-to-br from-violet-50 via-rose-50 to-amber-50 shadow-lg shadow-violet-100">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-white">
-                  <Sparkles className="w-5 h-5 text-purple-400" />
+                <CardTitle className="flex items-center gap-2 text-stone-800">
+                  <Sparkles className="w-5 h-5 text-violet-400" />
                   星辰的启示
                 </CardTitle>
               </CardHeader>
@@ -493,13 +530,13 @@ ${result.aiAnalysis}
                 {isAnalyzingAI ? (
                   <LoadingAnimation message="星辰正在排列..." />
                 ) : (
-                  <div className="prose prose-invert max-w-none">
+                  <div className="prose max-w-none">
                     {result?.aiAnalysis.split('\n').map((line, i) => {
                       if (line.match(/^【.+】$/)) {
-                        return <h4 key={i} className="text-purple-300 font-semibold mt-6 mb-3 text-lg">{line}</h4>
+                        return <h4 key={i} className="text-violet-600 font-semibold mt-6 mb-3 text-lg">{line}</h4>
                       }
                       if (line.trim()) {
-                        return <p key={i} className="text-white/80 leading-8 text-base mb-3">{line}</p>
+                        return <p key={i} className="text-stone-600 leading-8 text-base mb-3">{line}</p>
                       }
                       return null
                     })}
@@ -512,7 +549,7 @@ ${result.aiAnalysis}
             {!simpleExplanation && !isExplaining && result?.aiAnalysis && (
               <Button
                 onClick={handleGetSimpleExplanation}
-                className="w-full h-12 bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl"
+                className="w-full h-12 bg-gradient-to-r from-violet-400/80 to-rose-400/80 hover:from-violet-500 hover:to-rose-500 text-white rounded-xl shadow-md"
               >
                 <Sparkles className="w-4 h-4 mr-2" />
                 帮我解读（通俗版）
@@ -521,10 +558,10 @@ ${result.aiAnalysis}
 
             {/* 通俗解读内容 */}
             {(simpleExplanation || isExplaining) && (
-              <Card className="border-pink-500/30 bg-gradient-to-br from-pink-900/30 to-rose-900/30 backdrop-blur-xl">
+              <Card className="border-rose-200 bg-gradient-to-br from-rose-50 to-amber-50 shadow-lg shadow-rose-100">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-white">
-                    <Sparkles className="w-5 h-5 text-pink-400" />
+                  <CardTitle className="flex items-center gap-2 text-stone-800">
+                    <Sparkles className="w-5 h-5 text-rose-400" />
                     通俗解读
                   </CardTitle>
                 </CardHeader>
@@ -532,18 +569,18 @@ ${result.aiAnalysis}
                   {isExplaining ? (
                     <div className="flex items-center justify-center py-8">
                       <div className="text-center">
-                        <Loader2 className="w-8 h-8 text-pink-400 animate-spin mx-auto mb-3" />
-                        <p className="text-white/60">正在用大白话解释...</p>
+                        <Loader2 className="w-8 h-8 text-rose-400 animate-spin mx-auto mb-3" />
+                        <p className="text-stone-500">正在用大白话解释...</p>
                       </div>
                     </div>
                   ) : (
-                    <div className="prose prose-invert max-w-none">
+                    <div className="prose max-w-none">
                       {simpleExplanation.split('\n').map((line, i) => {
                         if (line.match(/^【.+】$/)) {
-                          return <h4 key={i} className="text-pink-300 font-semibold mt-4 mb-2 text-base">{line}</h4>
+                          return <h4 key={i} className="text-rose-600 font-semibold mt-4 mb-2 text-base">{line}</h4>
                         }
                         if (line.trim()) {
-                          return <p key={i} className="text-white/80 leading-7 text-sm mb-2">{line}</p>
+                          return <p key={i} className="text-stone-600 leading-7 text-sm mb-2">{line}</p>
                         }
                         return null
                       })}
@@ -565,11 +602,32 @@ ${result.aiAnalysis}
               <Button 
                 variant="outline" 
                 onClick={() => setShowResult(false)}
-                className="flex-1 h-12 border-white/20 text-white hover:bg-white/10"
+                className="flex-1 h-12 border-stone-300 text-stone-600 hover:bg-stone-100"
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
                 再次探寻
               </Button>
+              
+              {/* 保存按钮 */}
+              <Button 
+                onClick={handleSave}
+                disabled={isSaved || isSaving}
+                className={`flex-1 h-12 ${
+                  isSaved 
+                    ? 'bg-green-500 hover:bg-green-600' 
+                    : 'bg-gradient-to-r from-violet-500 to-purple-500'
+                }`}
+              >
+                {isSaving ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : isSaved ? (
+                  <Sparkles className="w-4 h-4 mr-2" />
+                ) : (
+                  <Heart className="w-4 h-4 mr-2" />
+                )}
+                {isSaved ? '已保存' : '保存记录'}
+              </Button>
+              
               <Button 
                 onClick={handleShare}
                 className="flex-1 h-12 bg-gradient-to-r from-pink-500 to-purple-500"
@@ -580,7 +638,7 @@ ${result.aiAnalysis}
             </div>
 
             <Link href="/" className="block">
-              <Button variant="ghost" className="w-full text-white/60 hover:text-white">
+              <Button variant="ghost" className="w-full text-stone-500 hover:text-stone-700 hover:bg-stone-100">
                 返回首页继续探索
               </Button>
             </Link>

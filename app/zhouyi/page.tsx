@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Sun, ArrowLeft, Sparkles, RefreshCw } from "lucide-react"
+import { Sun, ArrowLeft, Sparkles, RefreshCw, Heart, Loader2 } from "lucide-react"
 import Link from "next/link"
 
 // 六十四卦数据（简化版）
@@ -42,6 +42,8 @@ export default function ZhouyiPage() {
   const [isTossing, setIsTossing] = useState(false)
   const [result, setResult] = useState<typeof HEXAGRAMS[0] | null>(null)
   const [tossHistory, setTossHistory] = useState<number[]>([])
+  const [isSaved, setIsSaved] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
 
   const handleToss = async () => {
     if (!question.trim()) {
@@ -67,11 +69,44 @@ export default function ZhouyiPage() {
     setQuestion("")
     setResult(null)
     setTossHistory([])
+    setIsSaved(false)
+  }
+
+  // 保存周易记录
+  const handleSave = async () => {
+    if (!result || isSaved) return
+    
+    setIsSaving(true)
+    try {
+      const response = await fetch('/api/zhouyi', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question: question,
+          hexagramName: result.name,
+          hexagramSymbol: result.symbol,
+          meaning: result.meaning,
+          description: result.description,
+          interpretation: result.interpretation,
+          readingType: 'coin'
+        })
+      })
+      
+      const data = await response.json()
+      if (data.success) {
+        setIsSaved(true)
+        alert('已保存到你的周易记录中！')
+      }
+    } catch (error) {
+      console.error('保存错误:', error)
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   return (
     <div className="min-h-screen relative">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-900/40 via-background to-background" />
+      <div className="absolute inset-0 bg-gradient-to-b from-stone-900 via-stone-800 to-stone-900" />
       
       <div className="relative z-10 container mx-auto px-4 py-8">
         <div className="flex items-center gap-4 mb-8">
@@ -84,24 +119,24 @@ export default function ZhouyiPage() {
         </div>
 
         {!result ? (
-          <Card className="max-w-xl mx-auto border-white/10 bg-white/5 backdrop-blur-sm">
+          <Card className="max-w-xl mx-auto border-stone-700 bg-stone-800/50 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Sun className="w-5 h-5 text-amber-400" />
+              <CardTitle className="flex items-center gap-2 text-amber-400">
+                <Sun className="w-5 h-5" />
                 心诚则灵
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-stone-400">
                 心中默念您的问题，抛掷三枚铜钱进行占卜
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
-                <label className="text-sm font-medium">您的问题</label>
+                <label className="text-sm font-medium text-stone-300">您的问题</label>
                 <textarea
                   value={question}
                   onChange={(e) => setQuestion(e.target.value)}
                   placeholder="请默念您想占卜的问题..."
-                  className="w-full h-24 px-3 py-2 rounded-md bg-white/10 border border-white/10 text-white placeholder:text-white/50 resize-none"
+                  className="w-full h-24 px-3 py-2 rounded-md bg-stone-700/50 border border-stone-600 text-stone-100 placeholder:text-stone-500 resize-none"
                 />
               </div>
 
@@ -112,8 +147,8 @@ export default function ZhouyiPage() {
                     <div 
                       key={idx}
                       className={`w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold
-                        ${val === 6 || val === 9 ? 'bg-amber-500/50 text-amber-200' : 
-                          val === 7 ? 'bg-yang-500/50 text-white' : 'bg-yin-500/50 text-white'}`}
+                        ${val === 6 || val === 9 ? 'bg-red-900/50 text-red-300' : 
+                          val === 7 ? 'bg-amber-900/50 text-amber-300' : 'bg-stone-700/50 text-stone-300'}`}
                     >
                       {val}
                     </div>
@@ -124,7 +159,7 @@ export default function ZhouyiPage() {
               <Button 
                 onClick={handleToss}
                 disabled={isTossing || !question.trim()}
-                className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700"
+                className="w-full bg-gradient-to-r from-red-700 to-amber-600 hover:from-red-800 hover:to-amber-700 text-white shadow-lg shadow-red-900/20"
               >
                 {isTossing ? (
                   <>
@@ -139,27 +174,27 @@ export default function ZhouyiPage() {
                 )}
               </Button>
 
-              <p className="text-xs text-center text-muted-foreground">
+              <p className="text-xs text-center text-stone-500">
                 每日可免费占卜3次
               </p>
             </CardContent>
           </Card>
         ) : (
           <div className="max-w-2xl mx-auto space-y-6">
-            <Card className="border-white/10 bg-white/5 backdrop-blur-sm text-center">
+            <Card className="border-stone-700 bg-stone-800/50 backdrop-blur-sm text-center">
               <CardHeader>
                 <div className="text-8xl mb-4">{result.symbol}</div>
-                <CardTitle className="font-serif text-3xl">{result.name}</CardTitle>
-                <CardDescription className="text-lg">{result.meaning}</CardDescription>
+                <CardTitle className="font-serif text-3xl text-amber-400">{result.name}</CardTitle>
+                <CardDescription className="text-stone-400 text-lg">{result.meaning}</CardDescription>
               </CardHeader>
             </Card>
 
-            <Card className="border-white/10 bg-white/5 backdrop-blur-sm">
+            <Card className="border-stone-700 bg-stone-800/50 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle>卦辞</CardTitle>
+                <CardTitle className="text-amber-400">卦辞</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground leading-relaxed">
+                <p className="text-stone-300 leading-relaxed">
                   {result.description}
                 </p>
               </CardContent>
@@ -187,6 +222,27 @@ export default function ZhouyiPage() {
               >
                 重新占卜
               </Button>
+              
+              {/* 保存按钮 */}
+              <Button 
+                onClick={handleSave}
+                disabled={isSaved || isSaving}
+                className={`flex-1 ${
+                  isSaved 
+                    ? 'bg-green-500 hover:bg-green-600' 
+                    : ''
+                }`}
+              >
+                {isSaving ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : isSaved ? (
+                  <Sparkles className="w-4 h-4 mr-2" />
+                ) : (
+                  <Heart className="w-4 h-4 mr-2" />
+                )}
+                {isSaved ? '已保存' : '保存记录'}
+              </Button>
+              
               <Link href="/" className="flex-1">
                 <Button variant="outline" className="w-full">
                   返回首页

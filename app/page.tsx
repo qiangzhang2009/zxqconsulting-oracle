@@ -1,48 +1,93 @@
 import Link from "next/link"
-import { Sparkles, Star, Sun, Gem, ArrowRight, Sparkle } from "lucide-react"
+import { Sparkles, Star, Sun, Gem, ArrowRight, Sparkle, Heart, Briefcase, Compass, Moon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
-const fortuneTypes = [
+// 场景化入口 - 按文档规划
+const sceneEntries = [
   {
-    id: "bazi",
-    title: "八字算命",
-    description: "根据出生年月日时，解析命运格局",
-    icon: Sparkles,
-    href: "/bazi",
-    color: "from-purple-500 to-indigo-500",
-    emoji: "🎴",
-    feature: "人生格局",
+    id: "self",
+    title: "自我探索",
+    description: "我是谁？我的天赋与性格特质是什么？",
+    icon: Compass,
+    href: "/constellation",
+    color: "from-blue-500 to-cyan-400",
+    emoji: "🔮",
+    cta: "探索星盘",
   },
   {
+    id: "love",
+    title: "情感关系",
+    description: "我的情感模式是什么？如何与TA相处？",
+    icon: Heart,
+    href: "/match",
+    color: "from-rose-500 to-pink-400",
+    emoji: "💕",
+    cta: "情感解惑",
+  },
+  {
+    id: "career",
+    title: "事业财富",
+    description: "我的事业方向在哪里？如何把握机遇？",
+    icon: Briefcase,
+    href: "/bazi",
+    color: "from-amber-500 to-orange-400",
+    emoji: "💼",
+    cta: "事业指引",
+  },
+]
+
+// 工具模块（场景化入口的下层）
+const tools = [
+  {
     id: "constellation",
-    title: "星座运势",
-    description: "十二星座每日每周运势解读",
+    title: "星座星盘",
+    description: "太阳、月亮、上升星座，解读你的核心特质",
     icon: Star,
     href: "/constellation",
     color: "from-blue-500 to-cyan-500",
     emoji: "✨",
-    feature: "每日运势",
+    camp: "west",
+  },
+  {
+    id: "match",
+    title: "星座配对",
+    description: "两人星座合盘，了解相处模式",
+    icon: Heart,
+    href: "/match",
+    color: "from-rose-500 to-pink-500",
+    emoji: "💑",
+    camp: "west",
+  },
+  {
+    id: "tarot",
+    title: "塔罗牌阵",
+    description: "聚焦当下问题，揭示潜意识指引",
+    icon: Gem,
+    href: "/tarot",
+    color: "from-violet-500 to-purple-500",
+    emoji: "🃏",
+    camp: "west",
+  },
+  {
+    id: "bazi",
+    title: "八字命理",
+    description: "出生时间格局，解读人生大运",
+    icon: Sparkles,
+    href: "/bazi",
+    color: "from-amber-600 to-orange-600",
+    emoji: "🎴",
+    camp: "east",
   },
   {
     id: "zhouyi",
     title: "周易占卜",
-    description: "易经六十四卦，预测吉凶祸福",
+    description: "易经六十四卦，决策参考指南",
     icon: Sun,
     href: "/zhouyi",
-    color: "from-amber-500 to-orange-500",
+    color: "from-yellow-600 to-amber-600",
     emoji: "☯️",
-    feature: "趋吉避凶",
-  },
-  {
-    id: "tarot",
-    title: "塔罗牌",
-    description: "经典西方神秘学，解答人生困惑",
-    icon: Gem,
-    href: "/tarot",
-    color: "from-rose-500 to-pink-500",
-    emoji: "🃏",
-    feature: "指引迷津",
+    camp: "east",
   },
 ]
 
@@ -88,15 +133,26 @@ export default function HomePage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-              <Sparkle className="w-5 h-5 text-white" />
+              <Moon className="w-5 h-5 text-white" />
             </div>
-            <span className="font-serif text-xl font-bold text-white">命运方舟</span>
+            <span className="font-serif text-xl font-bold text-white">知几</span>
           </div>
-          <Link href="/login">
-            <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
-              登录
-            </Button>
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link href="/constellation" className="text-white/70 hover:text-white text-sm hidden sm:block">
+              自我探索
+            </Link>
+            <Link href="/match" className="text-white/70 hover:text-white text-sm hidden sm:block">
+              情感关系
+            </Link>
+            <Link href="/bazi" className="text-white/70 hover:text-white text-sm hidden sm:block">
+              事业财富
+            </Link>
+            <Link href="/login">
+              <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
+                登录
+              </Button>
+            </Link>
+          </div>
         </div>
       </nav>
 
@@ -105,70 +161,102 @@ export default function HomePage() {
         <div className="text-center mb-20">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white/70 text-sm mb-8 animate-fade-in-up">
             <Sparkle className="w-4 h-4 text-amber-400" />
-            AI智能算命新时代
+            东西方智慧决策平台
           </div>
           
           <h1 className="font-serif text-5xl md:text-7xl font-bold mb-6 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
             <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">
-              探索你的命运
+              知几知彼
             </span>
           </h1>
           
           <p className="text-xl md:text-2xl text-white/70 mb-8 max-w-2xl mx-auto animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-            结合千年传统命理学与先进AI技术，为您提供精准、个性化的命运解读
+            用东方智慧看八字周易，用西方心理学解星座塔罗<br/>
+            <span className="text-white/50 text-lg">无论你是想了解自己，还是想做出人生决策，这里都有答案</span>
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-            <Link href="/bazi">
-              <Button size="lg" className="h-14 px-8 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-lg rounded-full animate-pulse-glow">
-                立即开始算命
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </Link>
             <Link href="/constellation">
-              <Button size="lg" variant="outline" className="h-14 px-8 border-white/20 text-white hover:bg-white/10 text-lg rounded-full">
-                测试星座运势
+              <Button size="lg" className="h-14 px-8 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-lg rounded-full animate-pulse-glow">
+                开始探索
+                <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>
           </div>
         </div>
 
-        {/* 算命类型卡片 */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-20">
-          {fortuneTypes.map((item, index) => (
-            <Link key={item.id} href={item.href}>
-              <Card className="group cursor-pointer border-white/10 bg-white/5 backdrop-blur-xl hover:bg-white/10 transition-all duration-500 hover:scale-105 hover:border-purple-500/50 hover:shadow-xl hover:shadow-purple-500/20 h-full">
-                <CardHeader>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${item.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-                      <span className="text-2xl">{item.emoji}</span>
+        {/* 场景化入口 - 核心区域 */}
+        <div className="mb-20">
+          <h2 className="text-2xl font-bold text-white text-center mb-8">
+            你今天想了解什么？
+          </h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            {sceneEntries.map((scene, index) => (
+              <Link key={scene.id} href={scene.href}>
+                <Card className="group cursor-pointer border-white/10 bg-white/5 backdrop-blur-xl hover:bg-white/10 transition-all duration-500 hover:scale-105 hover:shadow-2xl h-full">
+                  <CardHeader>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${scene.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+                        <span className="text-3xl">{scene.emoji}</span>
+                      </div>
+                      <ArrowRight className="w-6 h-6 text-white/30 group-hover:text-white group-hover:translate-x-1 transition-all" />
                     </div>
-                    <ArrowRight className="w-5 h-5 text-white/30 group-hover:text-white group-hover:translate-x-1 transition-all" />
-                  </div>
-                  <CardTitle className="font-serif text-xl text-white mb-2">
-                    {item.title}
-                  </CardTitle>
-                  <CardDescription className="text-white/50">
-                    {item.description}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 text-xs text-white/60">
-                    <Sparkle className="w-3 h-3" />
-                    {item.feature}
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+                    <CardTitle className="font-serif text-2xl text-white mb-2">
+                      {scene.title}
+                    </CardTitle>
+                    <CardDescription className="text-white/60 text-base">
+                      {scene.description}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-white group-hover:bg-white/20 transition-colors">
+                      <span className="text-sm font-medium">{scene.cta}</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* 工具模块 - 分类展示 */}
+        <div className="mb-20">
+          <div className="flex items-center justify-center gap-4 mb-8">
+            <div className="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent flex-1 max-w-[100px]" />
+            <span className="text-white/40 text-sm">或选择具体工具</span>
+            <div className="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent flex-1 max-w-[100px]" />
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
+            {tools.map((tool, index) => (
+              <Link key={tool.id} href={tool.href}>
+                <Card className={`group cursor-pointer border-white/10 bg-white/5 backdrop-blur-xl hover:bg-white/10 transition-all duration-300 hover:scale-105 h-full ${tool.camp === 'east' ? 'hover:border-amber-500/50 hover:shadow-amber-500/20' : 'hover:border-purple-500/50 hover:shadow-purple-500/20'}`}>
+                  <CardHeader className="pb-2">
+                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${tool.color} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300`}>
+                      <span className="text-xl">{tool.emoji}</span>
+                    </div>
+                    <CardTitle className="font-serif text-lg text-white">
+                      {tool.title}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <CardDescription className="text-white/50 text-xs line-clamp-2">
+                      {tool.description}
+                    </CardDescription>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
         </div>
 
         {/* 特色功能 */}
         <div className="grid md:grid-cols-3 gap-6 mb-20">
           {[
-            { emoji: "🎯", title: "精准分析", desc: "结合千年传统智慧与现代AI技术，探寻命运玄机" },
-            { emoji: "🤖", title: "AI智能解读", desc: "DeepSeek深度学习，为你揭示独特的人生密码" },
-            { emoji: "⚡", title: "随时随地", desc: "输入生辰信息，即可获得专属的命运启示" },
+            { emoji: "🎯", title: "更懂自己", desc: "不是给你贴标签，而是帮助你理解自己的内在模式" },
+            { emoji: "🤝", title: "关系解密", desc: "了解自己在关系中的模式，学会更好的相处之道" },
+            { emoji: "✨", title: "成长指引", desc: "不是告诉你会发生什么，而是启发你如何变得更好" },
           ].map((item, i) => (
             <div 
               key={i} 
@@ -185,9 +273,9 @@ export default function HomePage() {
         {/* CTA */}
         <div className="text-center mb-16">
           <div className="inline-block p-8 rounded-3xl bg-gradient-to-r from-purple-600/20 via-pink-600/20 to-amber-600/20 border border-white/10">
-            <h2 className="text-2xl font-bold text-white mb-4">准备好探索你的命运了吗？</h2>
-            <p className="text-white/60 mb-6">每日免费算命3次 · 首次注册赠送VIP体验</p>
-            <Link href="/bazi">
+            <h2 className="text-2xl font-bold text-white mb-4">准备好更了解自己了吗？</h2>
+            <p className="text-white/60 mb-6">输入你的出生信息，获得专属的人生指引</p>
+            <Link href="/constellation">
               <Button size="lg" className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-6 text-lg rounded-full">
                 开始探索
               </Button>
@@ -200,10 +288,10 @@ export default function HomePage() {
       <footer className="relative z-10 border-t border-white/10 py-8">
         <div className="container mx-auto px-4 text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <Sparkle className="w-4 h-4 text-purple-400" />
-            <span className="text-white/70">命运方舟</span>
+            <Moon className="w-4 h-4 text-purple-400" />
+            <span className="text-white/70">知几</span>
           </div>
-          <p className="text-white/40 text-sm">© 2024 命运方舟 Fortune Insight. All rights reserved.</p>
+          <p className="text-white/40 text-sm">© 2024 知几. All rights reserved.</p>
           <p className="text-white/30 text-xs mt-2">本服务仅供娱乐参考，请勿迷信</p>
         </div>
       </footer>

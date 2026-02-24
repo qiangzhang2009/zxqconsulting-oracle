@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Gem, ArrowLeft, Sparkles } from "lucide-react"
+import { Gem, ArrowLeft, Sparkles, Heart, Loader2 } from "lucide-react"
 import Link from "next/link"
 
 // 塔罗牌数据（简化版22张大阿尔卡纳）
@@ -41,6 +41,8 @@ function drawCard() {
 export default function TarotPage() {
   const [isDrawing, setIsDrawing] = useState(false)
   const [card, setCard] = useState<typeof TAROT_CARDS[0] | null>(null)
+  const [isSaved, setIsSaved] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
 
   const handleDraw = async () => {
     setIsDrawing(true)
@@ -58,37 +60,68 @@ export default function TarotPage() {
 
   const handleReset = () => {
     setCard(null)
+    setIsSaved(false)
+  }
+
+  // 保存塔罗牌记录
+  const handleSave = async () => {
+    if (!card || isSaved) return
+    
+    setIsSaving(true)
+    try {
+      const response = await fetch('/api/tarot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cardName: card.name,
+          cardNumber: card.number,
+          keywords: card.keywords,
+          meaning: card.meaning,
+          readingType: 'single'
+        })
+      })
+      
+      const data = await response.json()
+      if (data.success) {
+        setIsSaved(true)
+        alert('已保存到你的塔罗记录中！')
+      }
+    } catch (error) {
+      console.error('保存错误:', error)
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   return (
     <div className="min-h-screen relative">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-rose-900/40 via-background to-background" />
+      <div className="absolute inset-0 bg-gradient-to-b from-stone-50 via-rose-50/30 to-white" />
       
       <div className="relative z-10 container mx-auto px-4 py-8">
         <div className="flex items-center gap-4 mb-8">
           <Link href="/">
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" className="text-stone-600 hover:text-stone-800 hover:bg-stone-100">
               <ArrowLeft className="w-5 h-5" />
             </Button>
           </Link>
-          <h1 className="font-serif text-2xl font-bold">塔罗牌</h1>
+          <h1 className="font-serif text-2xl font-bold text-stone-800">塔罗牌</h1>
         </div>
 
         {!card ? (
-          <Card className="max-w-xl mx-auto border-white/10 bg-white/5 backdrop-blur-sm">
+          <Card className="max-w-xl mx-auto border-stone-200 bg-white shadow-xl shadow-stone-200/50">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-stone-800">
                 <Gem className="w-5 h-5 text-rose-400" />
                 塔罗占卜
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-stone-500">
                 静下心来，抽取一张代表你当下状态的塔罗牌
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="text-center py-8">
                 <div className="text-8xl mb-4">🃏</div>
-                <p className="text-muted-foreground">
+                <p className="text-stone-500">
                   集中精神，默念你的问题
                 </p>
               </div>
@@ -96,7 +129,7 @@ export default function TarotPage() {
               <Button 
                 onClick={handleDraw}
                 disabled={isDrawing}
-                className="w-full bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 h-14 text-lg"
+                className="w-full bg-gradient-to-r from-rose-300 to-violet-300 hover:from-rose-400 hover:to-violet-400 h-14 text-lg text-stone-800 shadow-md"
               >
                 {isDrawing ? (
                   <>
@@ -118,16 +151,16 @@ export default function TarotPage() {
           </Card>
         ) : (
           <div className="max-w-2xl mx-auto space-y-6">
-            <Card className="border-white/10 bg-white/5 backdrop-blur-sm text-center overflow-hidden">
-              <div className="bg-gradient-to-b from-rose-500/20 to-transparent pt-8 pb-4">
+            <Card className="border-stone-200 bg-white shadow-xl shadow-stone-200/50 text-center overflow-hidden">
+              <div className="bg-gradient-to-b from-rose-100 to-transparent pt-8 pb-4">
                 <div className="text-8xl mb-4">🃏</div>
-                <CardTitle className="font-serif text-3xl">{card.name}</CardTitle>
-                <p className="text-rose-400 mt-2">第 {card.number} 号牌</p>
+                <CardTitle className="font-serif text-3xl text-stone-800">{card.name}</CardTitle>
+                <p className="text-rose-500 mt-2">第 {card.number} 号牌</p>
               </div>
-              <CardContent className="border-t border-white/10">
+              <CardContent className="border-t border-stone-100">
                 <div className="flex flex-wrap justify-center gap-2 mt-4">
                   {card.keywords.split("、").map((keyword, idx) => (
-                    <span key={idx} className="px-3 py-1 text-sm rounded-full bg-rose-500/20 text-rose-300">
+                    <span key={idx} className="px-3 py-1 text-sm rounded-full bg-rose-100 text-rose-600">
                       {keyword}
                     </span>
                   ))}
@@ -135,15 +168,15 @@ export default function TarotPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-white/10 bg-white/5 backdrop-blur-sm">
+            <Card className="border-stone-200 bg-white shadow-lg shadow-stone-100/50">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-stone-800">
                   <Sparkles className="w-5 h-5 text-rose-400" />
                   牌义解读
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground leading-relaxed">
+                <p className="text-stone-600 leading-relaxed">
                   {card.meaning}
                 </p>
               </CardContent>
@@ -153,12 +186,33 @@ export default function TarotPage() {
               <Button 
                 variant="outline" 
                 onClick={handleReset}
-                className="flex-1"
+                className="flex-1 border-stone-300 text-stone-600 hover:bg-stone-100"
               >
                 再抽一张
               </Button>
+              
+              {/* 保存按钮 */}
+              <Button 
+                onClick={handleSave}
+                disabled={isSaved || isSaving}
+                className={`flex-1 ${
+                  isSaved 
+                    ? 'bg-green-500 hover:bg-green-600' 
+                    : 'border-stone-300 text-stone-600 hover:bg-stone-100'
+                }`}
+              >
+                {isSaving ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : isSaved ? (
+                  <Sparkles className="w-4 h-4 mr-2" />
+                ) : (
+                  <Heart className="w-4 h-4 mr-2" />
+                )}
+                {isSaved ? '已保存' : '保存记录'}
+              </Button>
+              
               <Link href="/" className="flex-1">
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full border-stone-300 text-stone-600 hover:bg-stone-100">
                   返回首页
                 </Button>
               </Link>

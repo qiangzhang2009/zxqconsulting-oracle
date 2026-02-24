@@ -1,0 +1,101 @@
+import { NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
+
+export async function POST(request: Request) {
+  try {
+    const session = await getServerSession(authOptions)
+    const userId = session?.user?.id || null
+
+    const body = await request.json()
+    const { 
+      birthDate,
+      birthTime,
+      birthLocation,
+      yearGan,
+      yearZhi,
+      monthGan,
+      monthZhi,
+      dayGan,
+      dayZhi,
+      hourGan,
+      hourZhi,
+      aiAnalysis,
+      simpleAnalysis
+    } = body
+
+    if (!birthDate || !dayGan || !dayZhi) {
+      return NextResponse.json({ error: '缺少必要参数' }, { status: 400 })
+    }
+
+    // 构建出生日期时间
+    const birthHour = parseInt(birthTime || '12', 10)
+    const birthDatetime = new Date(`${birthDate}T${String(birthHour).padStart(2, '0')}:00:00`)
+
+    // 构建八字柱
+    const yearPillar = yearGan + yearZhi
+    const monthPillar = monthGan + monthZhi
+    const dayPillar = dayGan + dayZhi
+    const hourPillar = hourGan + hourZhi
+
+    // 简单的日主五行计算（简化版）
+    const dayMasterElements: Record<string, string> = {
+      "甲": "木", "乙": "木", "丙": "火", "丁": "火",
+      "戊": "土", "己": "土", "庚": "金", "辛": "金",
+      "壬": "水", "癸": "水"
+    }
+    const sunElement = dayMasterElements[dayGan] || "土"
+
+    const record = await prisma.baziRecord.create({
+      data: {
+        userId,
+        birthDatetime,
+        birthLocation,
+        yearPillar,
+        monthPillar,
+        dayPillar,
+        hourPillar,
+        dayMaster: dayGan,
+        sunElement,
+        tenGods: {},
+        aiAnalysis,
+        simpleAnalysis,
+        readingType: 'natal',
+        source: 'free'
+      }
+    })
+
+    return NextResponse.json({ 
+      success: true, 
+      recordId: record.id,
+      message: '八字记录已保存'
+    })
+  } catch (error) {
+    console.error('保存八字记录错误:', error)
+    return NextResponse.json({ error: '保存失败' }, { status: 500 })
+  }
+}
+
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const userId = searchParams.get('userId')
+    const limit = parseInt(searchParams.get('limit') || '10')
+    const offset = parseInt(searchParams.get('offset') || '0')
+
+    const records = await prisma.baziRecord.findMany({
+      where: userId ? { userId } : {},
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+      skip: offset
+    })
+
+    return NextResponse.json({ records })
+  } catch (error) {
+    console.error('获取八字记录错误:', error)
+    return NextResponse.json({ error: '获取失败' }, { status: 500 })
+  }
+}

@@ -1,0 +1,314 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== 用户系统 ====================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  phone         String?   @unique
+  nickname      String?
+  avatarUrl     String?
+  birthData     Json?     // 已存储的出生数据
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // 关联
+  constellationRecords ConstellationRecord[]
+  baziRecords         BaziRecord[]
+  matchRecords        MatchRecord[]
+  tarotReadings       TarotReading[]
+  zhouyiReadings      ZhouyiReading[]
+  payments            Payment[]
+  vipSubscription     VipSubscription?
+
+  @@map("users")
+}
+
+// VIP 订阅
+model VipSubscription {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startDate       DateTime
+  endDate         DateTime
+  tier            VipTier   @default(BASIC)
+  autoRenew       Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("vip_subscriptions")
+}
+
+enum VipTier {
+  BASIC
+  PREMIUM
+  ULTIMATE
+}
+
+// 支付记录
+model Payment {
+  id              String        @id @default(cuid())
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount          Decimal       @db.Decimal(10, 2)
+  currency        String        @default("CNY")
+  paymentMethod   String
+  orderNo         String        @unique
+  transactionId   String?
+  productType     ProductType
+  productId       String?
+  status          PaymentStatus @default(PENDING)
+  paidAt          DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@map("payments")
+  @@index([userId])
+  @@index([orderNo])
+}
+
+enum ProductType {
+  VIP_MONTH
+  VIP_YEAR
+  SINGLE_READING
+  PACKAGE
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+// ==================== 星座/星盘模块 ====================
+
+model ConstellationRecord {
+  id              String    @id @default(cuid())
+  userId          String?
+  user            User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  // 出生信息
+  birthDate       DateTime
+  birthTime       DateTime?
+  birthLocation   String?
+  timezoneOffset  Int       @default(8)
+  
+  // 星盘数据
+  sunSign         String    // 太阳星座
+  moonSign        String?   // 月亮星座
+  risingSign      String?   // 上升星座
+  planetPositions Json      // 行星位置
+  houseSigns      Json?     // 宫位
+  aspects         Json?     // 相位
+  elements        Json?     // 元素分布
+  modes           Json?     // 模式分布
+  
+  // 分析结果
+  aiAnalysis      String?   @db.Text
+  simpleAnalysis String?   @db.Text
+  
+  // 元数据
+  isFavorite      Boolean   @default(false)
+  readingType     String    @default("natal") // natal( natal chart), daily(每日运势), compatibility(配对)
+  source          String    @default("free")  // free(免费), vip(VIP)
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("constellation_records")
+  @@index([userId])
+  @@index([birthDate])
+  @@index([createdAt])
+}
+
+// ==================== 星座配对模块 ====================
+
+model MatchRecord {
+  id              String    @id @default(cuid())
+  userId          String?
+  user            User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  // 配对信息
+  myConstellation String
+  theirConstellation String
+  
+  // 匹配数据
+  matchScore      Int
+  elementCompat   Json?     // 元素契合度
+  modeCompat      Json?     // 模式契合度
+  advantages      Json      // 契合优势
+  suggestions     Json      // 相处建议
+  precautions     Json      // 注意事项
+  
+  // 分析
+  aiAnalysis      String?   @db.Text
+  
+  createdAt       DateTime  @default(now())
+
+  @@map("match_records")
+  @@index([userId])
+  @@index([myConstellation])
+  @@index([theirConstellation])
+}
+
+// ==================== 塔罗牌模块 ====================
+
+model TarotReading {
+  id              String    @id @default(cuid())
+  userId          String?
+  user            User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  // 占卜信息
+  question        String?   @db.Text
+  readingType     String    // daily(每日), love(爱情), career(事业), general(通用)
+  spreadType      String    // single(三张牌), horseshoe(马蹄铁), celtic(凯尔特十字)
+  
+  // 牌面数据
+  drawnCards      Json      // 抽到的牌列表
+  positions       Json?     // 牌位含义
+  
+  // 解读
+  aiInterpretation String?  @db.Text
+  
+  // 元数据
+  isFavorite      Boolean   @default(false)
+  source          String    @default("free")
+  
+  createdAt       DateTime  @default(now())
+
+  @@map("tarot_readings")
+  @@index([userId])
+  @@index([readingType])
+  @@index([createdAt])
+}
+
+// ==================== 八字模块 ====================
+
+model BaziRecord {
+  id              String    @id @default(cuid())
+  userId          String?
+  user            User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  // 出生信息
+  birthDatetime   DateTime
+  birthLocation   String?
+  timezoneOffset  Int       @default(8)
+  lunarCalendar   Boolean   @default(true) // 是否农历
+  
+  // 八字数据
+  yearPillar      String    // 年柱
+  monthPillar     String    // 月柱
+  dayPillar       String    // 日柱
+  hourPillar      String    // 时柱
+  
+  dayMaster       String    // 日主
+  sunElement      String    // 日主五行
+  
+  // 十神
+  tenGods         Json      // 十神分布
+  
+  // 神煞
+  sevenKillers    Json?     // 七杀/偏官
+  officialStars   Json?     // 官星
+  wealthStars     Json?     // 财星
+  printStars      Json?     // 印星
+  foodGodStars    Json?     // 食伤
+  
+  // 分析结果
+  aiAnalysis      String?   @db.Text
+  simpleAnalysis String?   @db.Text
+  
+  // 元数据
+  isFavorite      Boolean   @default(false)
+  readingType     String    @default("natal") // natal(终身), yearly(年运), monthly(月运)
+  source          String    @default("free")
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("bazi_records")
+  @@index([userId])
+  @@index([birthDatetime])
+  @@index([dayPillar])
+}
+
+// ==================== 周易模块 ====================
+
+model ZhouyiReading {
+  id              String    @id @default(cuid())
+  userId          String?
+  user            User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  // 占卜信息
+  question        String    @db.Text
+  coinsTosses     Json      // 铜钱投掷结果
+  
+  // 卦象数据
+  hexagramNumber  Int       // 卦象编号 1-64
+  hexagramName    String    // 卦名
+  hexagramSymbol  String    // 卦象符号
+  changingLines   Json?     // 变爻信息
+  
+  // 解读
+  guaCi           String?   @db.Text // 卦辞
+  tuanZheng       String?   @db.Text // 彖传
+  xiangZheng     String?   @db.Text // 象传
+  aiInterpretation String?  @db.Text
+  
+  // 元数据
+  isFavorite      Boolean   @default(false)
+  source          String    @default("free")
+  
+  createdAt       DateTime  @default(now())
+
+  @@map("zhouyi_readings")
+  @@index([userId])
+  @@index([hexagramNumber])
+  @@index([createdAt])
+}
+
+// ==================== 系统配置 ====================
+
+// API 使用统计
+model ApiUsage {
+  id              String    @id @default(cuid())
+  endpoint        String
+  userId          String?
+  creditsUsed     Int       @default(1)
+  responseTime    Int?      // 毫秒
+  createdAt       DateTime  @default(now())
+
+  @@map("api_usage")
+  @@index([endpoint])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// 用户反馈
+model Feedback {
+  id              String    @id @default(cuid())
+  userId          String?
+  type            String    // bug, feature, complaint, compliment
+  content         String    @db.Text
+  screenshots     Json?     // 截图URL列表
+  status          String    @default("pending") // pending, reviewed, resolved
+  response        String?   @db.Text
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("feedbacks")
+  @@index([userId])
+  @@index([status])
+}
