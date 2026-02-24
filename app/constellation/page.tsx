@@ -25,10 +25,10 @@ const CONSTELLATIONS = [
 // 根据日期获取星座
 function getConstellation(month: number, day: number): typeof CONSTELLATIONS[0] {
   const dates = [20, 19, 21, 20, 21, 21, 23, 23, 23, 23, 22, 22]
-  const names = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
   const index = month - 1
   const n = dates[index]
-  return day < n ? names[index - 1 < 0 ? 11 : index - 1] : names[index]
+  const constellationIndex = day < n ? (index - 1 < 0 ? 11 : index - 1) : index
+  return CONSTELLATIONS[constellationIndex]
 }
 
 // 运势数据（简化版）

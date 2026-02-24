@@ -219,7 +219,6 @@ export function getNayin(gan: string, zhi: string): string {
  */
 export function getDayMaster(bazi: BaziResult): string {
   const dayGan = bazi.day.gan
-  const wuxing = WUXING[dayGan]
   
   const masters: Record<string, string> = {
     "甲": "甲木命 - 参天大树",

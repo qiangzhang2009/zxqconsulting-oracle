@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
 
 // 运势分析结果缓存
 const fortuneCache = new Map<string, { data: any; timestamp: number }>()

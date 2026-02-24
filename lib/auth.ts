@@ -17,18 +17,24 @@ export const authOptions: NextAuthOptions = {
 
         // 简化版：直接用手机号创建/查找用户
         // 实际生产需要验证码验证
-        let user = await getUserByPhone(credentials.phone)
+        const existingUser = await getUserByPhone(credentials.phone)
 
-        if (!user) {
-          // 创建新用户
-          user = await createUser({
+        if (existingUser) {
+          return {
+            id: (existingUser as any).id || 'unknown',
             phone: credentials.phone,
-            name: `用户${credentials.phone.slice(-4)}`
-          })
+            name: `用户${credentials.phone.slice(-4)}`,
+          }
         }
 
+        // 创建新用户
+        const newUser = await createUser({
+          phone: credentials.phone,
+          name: `用户${credentials.phone.slice(-4)}`
+        })
+
         return {
-          id: user.id,
+          id: (newUser as any).id || 'unknown',
           phone: credentials.phone,
           name: `用户${credentials.phone.slice(-4)}`,
         }

@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { YinYang, ArrowLeft, Sparkles, RefreshCw } from "lucide-react"
+import { Sun, ArrowLeft, Sparkles, RefreshCw } from "lucide-react"
 import Link from "next/link"
 
 // 六十四卦数据（简化版）
@@ -87,7 +87,7 @@ export default function ZhouyiPage() {
           <Card className="max-w-xl mx-auto border-white/10 bg-white/5 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <YinYang className="w-5 h-5 text-amber-400" />
+                <Sun className="w-5 h-5 text-amber-400" />
                 心诚则灵
               </CardTitle>
               <CardDescription>

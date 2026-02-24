@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
+import { createOrder } from '@/lib/notion'
 
 // 会员套餐配置
 const MEMBERSHIP_PLANS = {
@@ -116,30 +116,31 @@ export async function POST(request: Request) {
 
     // 获取套餐信息
     const plans = planType === 'single' ? SINGLE_PLANS : MEMBERSHIP_PLANS
-    const plan = plans[planId as keyof typeof plans]
+    const planKey = planId as keyof typeof plans
+    const plan = plans[planKey]
 
     if (!plan) {
       return NextResponse.json({ error: '无效的套餐ID' }, { status: 400 })
     }
 
-    // 创建订单（简化版，实际需要调用支付接口）
-    const order = await prisma.order.create({
-      data: {
-        userId,
-        type: planType === 'single' ? 'SINGLE' : 
-              planId === 'MONTHLY' ? 'MONTHLY' :
-              planId === 'YEARLY' ? 'YEARLY' : 'LIFETIME',
-        amount: plan.price,
-        status: 'PENDING'
-      }
+    // 创建订单（使用Notion）
+    const orderType = planType === 'single' ? 'SINGLE' : 
+          planId === 'monthly' ? 'MONTHLY' :
+          planId === 'yearly' ? 'YEARLY' : 'LIFETIME'
+    
+    const order = await createOrder({
+      userId,
+      type: orderType,
+      amount: (plan as any).price,
+      status: 'PENDING'
     })
 
     // 返回支付信息（简化版）
     // 实际生产需要调用微信/支付宝SDK生成支付参数
     return NextResponse.json({
       orderId: order.id,
-      amount: plan.price,
-      planName: plan.name,
+      amount: (plan as any).price,
+      planName: (plan as any).name,
       // 模拟支付链接
       paymentUrl: `/payment/simulate?orderId=${order.id}`,
       message: '支付功能演示模式'

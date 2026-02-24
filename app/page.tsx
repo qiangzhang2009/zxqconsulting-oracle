@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Sparkles, Star, YinYang, Gem } from "lucide-react"
+import { Sparkles, Star, Sun, Gem } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -24,7 +24,7 @@ const fortuneTypes = [
     id: "zhouyi",
     title: "周易占卜",
     description: "易经六十四卦，预测吉凶祸福",
-    icon: YinYang,
+    icon: Sun,
     href: "/zhouyi",
     color: "from-amber-500 to-orange-500",
   },
