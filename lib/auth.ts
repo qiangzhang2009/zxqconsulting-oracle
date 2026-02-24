@@ -6,6 +6,7 @@ const prisma = new PrismaClient()
 
 export const authOptions: NextAuthOptions = {
   providers: [
+    // 手机号登录（演示模式）
     CredentialsProvider({
       name: "手机号登录",
       credentials: {
@@ -31,7 +32,7 @@ export const authOptions: NextAuthOptions = {
               data: {
                 phone,
                 nickname: `用户${phone.slice(-4)}`,
-                email: `${phone}@zhiiji.com` // 虚拟邮箱
+                email: `${phone}@zhiiji.com`
               }
             })
             console.log('新用户注册:', user.id, phone)
@@ -48,6 +49,10 @@ export const authOptions: NextAuthOptions = {
         }
       }
     })
+    // 微信登录（需要企业认证的公众号/小程序）
+    // 如果需要启用微信登录，需要在 .env.local 中配置以下环境变量：
+    // WECHAT_APP_ID=your_app_id
+    // WECHAT_APP_SECRET=your_app_secret
   ],
   session: {
     strategy: "jwt",

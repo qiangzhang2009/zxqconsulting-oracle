@@ -1,5 +1,8 @@
+"use client"
+
 import Link from "next/link"
-import { Sparkles, Star, Sun, Gem, ArrowRight, Sparkle, Heart, Briefcase, Compass, Moon } from "lucide-react"
+import { useSession, signIn, signOut } from "next-auth/react"
+import { Sparkles, Star, Sun, Gem, ArrowRight, Sparkle, Heart, Briefcase, Compass, Moon, User, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -122,6 +125,7 @@ function FloatingElements() {
 }
 
 export default function HomePage() {
+  const { data: session } = useSession()
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* 背景 */}
@@ -147,11 +151,20 @@ export default function HomePage() {
             <Link href="/bazi" className="text-white/70 hover:text-white text-sm hidden sm:block">
               事业财富
             </Link>
-            <Link href="/login">
-              <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
-                登录
-              </Button>
-            </Link>
+            {session ? (
+              <Link href="/profile">
+                <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
+                  <User className="w-4 h-4 mr-1" />
+                  我的
+                </Button>
+              </Link>
+            ) : (
+              <Link href="/login">
+                <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
+                  登录
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </nav>
@@ -295,6 +308,28 @@ export default function HomePage() {
           <p className="text-white/30 text-xs mt-2">本服务仅供娱乐参考，请勿迷信</p>
         </div>
       </footer>
+
+      {/* 移动端底部导航 */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white/10 backdrop-blur-xl border-t border-white/10 px-6 py-3 safe-area-pb md:hidden z-50">
+        <div className="flex justify-around items-center">
+          <Link href="/" className="flex flex-col items-center gap-1 text-purple-400">
+            <Sparkles className="w-5 h-5" />
+            <span className="text-xs font-medium">首页</span>
+          </Link>
+          <Link href="/constellation" className="flex flex-col items-center gap-1 text-white/60">
+            <Compass className="w-5 h-5" />
+            <span className="text-xs">探索</span>
+          </Link>
+          <Link href="/match" className="flex flex-col items-center gap-1 text-white/60">
+            <Heart className="w-5 h-5" />
+            <span className="text-xs">配对</span>
+          </Link>
+          <Link href="/profile" className="flex flex-col items-center gap-1 text-white/60">
+            <User className="w-5 h-5" />
+            <span className="text-xs">我的</span>
+          </Link>
+        </div>
+      </div>
     </div>
   )
 }
