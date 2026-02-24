@@ -163,26 +163,12 @@ export default function HomePage() {
           ))}
         </div>
 
-        {/* 统计数据 */}
-        <div className="grid grid-cols-3 gap-8 mb-20 max-w-2xl mx-auto">
-          {[
-            { value: "50万+", label: "服务用户" },
-            { value: "98%", label: "准确率" },
-            { value: "4.9", label: "用户评分" },
-          ].map((stat, i) => (
-            <div key={i} className="text-center">
-              <div className="text-3xl md:text-4xl font-bold text-white mb-2">{stat.value}</div>
-              <div className="text-white/50 text-sm">{stat.label}</div>
-            </div>
-          ))}
-        </div>
-
         {/* 特色功能 */}
         <div className="grid md:grid-cols-3 gap-6 mb-20">
           {[
-            { emoji: "🎯", title: "精准分析", desc: "基于传统命理算法，结合现代AI技术，提供准确可靠的命理分析" },
-            { emoji: "🤖", title: "AI智能解读", desc: "利用DeepSeek技术生成个性化、深入浅出的命理解读报告" },
-            { emoji: "⚡", title: "快速出结果", desc: "秒级生成分析结果，随时随地，想算就算" },
+            { emoji: "🎯", title: "精准分析", desc: "结合千年传统智慧与现代AI技术，探寻命运玄机" },
+            { emoji: "🤖", title: "AI智能解读", desc: "DeepSeek深度学习，为你揭示独特的人生密码" },
+            { emoji: "⚡", title: "随时随地", desc: "输入生辰信息，即可获得专属的命运启示" },
           ].map((item, i) => (
             <div 
               key={i} 
