@@ -678,21 +678,6 @@ ${aiAnalysis}
               </Button>
             </div>
 
-            {/* 生成海报 */}
-            {result && (
-              <div className="mt-4">
-                <PosterGenerator 
-                  data={{
-                    title: `${result.yearGan}${result.yearZhi}年 ${result.monthGan}${result.monthZhi}月`,
-                    subtitle: `${result.dayGan}${result.dayZhi}日 ${result.hourGan}${result.hourZhi}时`,
-                    mainContent: aiAnalysis.slice(0, 150) + (aiAnalysis.length > 150 ? "..." : ""),
-                    theme: "amber"
-                  }}
-                  onGenerate={() => alert("海报已生成并下载！")}
-                />
-              </div>
-            )}
-
             <Link href="/" className="block">
               <Button variant="ghost" className="w-full text-white/60 hover:text-white">
                 返回首页继续探索

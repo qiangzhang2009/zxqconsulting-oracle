@@ -332,7 +332,7 @@ export default function HomePage() {
             <Moon className="w-4 h-4 text-purple-400" />
             <span className="text-white/70">知几</span>
           </div>
-          <p className="text-white/40 text-sm">© 2024 知几. All rights reserved.</p>
+          <p className="text-white/40 text-sm">© 2026 知几. zxq All rights reserved.</p>
           <p className="text-white/30 text-xs mt-2">本服务仅供娱乐参考，请勿迷信</p>
         </div>
       </footer>

@@ -82,3 +82,39 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: '获取失败' }, { status: 500 })
   }
 }
+
+// 删除记录
+export async function DELETE(request: Request) {
+  try {
+    const session = await getServerSession(authOptions)
+    const currentUserId = session?.user?.id
+    
+    const { searchParams } = new URL(request.url)
+    const recordId = searchParams.get('id')
+
+    if (!recordId) {
+      return NextResponse.json({ error: '缺少记录ID' }, { status: 400 })
+    }
+
+    const record = await prisma.zhouyiReading.findUnique({
+      where: { id: recordId }
+    })
+
+    if (!record) {
+      return NextResponse.json({ error: '记录不存在' }, { status: 404 })
+    }
+
+    if (record.userId && record.userId !== currentUserId) {
+      return NextResponse.json({ error: '无权删除此记录' }, { status: 403 })
+    }
+
+    await prisma.zhouyiReading.delete({
+      where: { id: recordId }
+    })
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('删除记录错误:', error)
+    return NextResponse.json({ error: '删除失败' }, { status: 500 })
+  }
+}

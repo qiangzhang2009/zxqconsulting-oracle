@@ -636,21 +636,6 @@ ${result.aiAnalysis}
                 <Share2 className="w-4 h-4 mr-2" />
                 分享启示
               </Button>
-              
-              {/* 生成海报按钮 */}
-              {result && (
-                <PosterGenerator 
-                  data={{
-                    title: result.constellation.name,
-                    subtitle: result.constellation.date,
-                    mainContent: result.aiAnalysis.slice(0, 200) + (result.aiAnalysis.length > 200 ? "..." : ""),
-                    extraInfo: `出生日期: ${result.birthDate}`,
-                    symbol: result.constellation.symbol,
-                    theme: "purple"
-                  }}
-                  onGenerate={() => alert("海报已生成并下载！")}
-                />
-              )}
             </div>
 
             <Link href="/" className="block">

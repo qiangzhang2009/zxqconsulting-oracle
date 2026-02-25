@@ -81,6 +81,7 @@ export default function ProfilePage() {
   
   // 记录详情弹窗
   const [selectedRecord, setSelectedRecord] = useState<FullRecord | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
   
   // 编辑资料状态
   const [isEditing, setIsEditing] = useState(false)
@@ -178,6 +179,36 @@ export default function ProfilePage() {
       console.error('加载记录失败:', error)
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  // 删除记录
+  const handleDeleteRecord = async (recordId: string) => {
+    if (!confirm('确定要删除这条记录吗？')) return
+    
+    setIsDeleting(true)
+    try {
+      let endpoint = ''
+      switch (activeTab) {
+        case 'constellation': endpoint = '/api/constellation'; break
+        case 'match': endpoint = '/api/match'; break
+        case 'tarot': endpoint = '/api/tarot'; break
+        case 'bazi': endpoint = '/api/bazi'; break
+        case 'zhouyi': endpoint = '/api/zhouyi'; break
+      }
+      
+      const res = await fetch(`${endpoint}?id=${recordId}`, { method: 'DELETE' })
+      if (res.ok) {
+        alert('删除成功')
+        loadRecords() // 重新加载
+      } else {
+        alert('删除失败')
+      }
+    } catch (error) {
+      console.error('删除记录失败:', error)
+      alert('删除失败')
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -421,11 +452,13 @@ export default function ProfilePage() {
             records.map((record) => (
               <Card 
                 key={record.id} 
-                className="border-0 bg-white/80 backdrop-blur-sm hover:shadow-md transition-shadow cursor-pointer"
-                onClick={() => setSelectedRecord(record)}
+                className="border-0 bg-white/80 backdrop-blur-sm hover:shadow-md transition-shadow"
               >
                 <CardContent className="p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
+                  <div 
+                    className="flex items-center gap-3 flex-1 cursor-pointer"
+                    onClick={() => setSelectedRecord(record)}
+                  >
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                       activeTab === 'constellation' ? 'bg-violet-100' :
                       activeTab === 'match' ? 'bg-rose-100' :
@@ -446,9 +479,20 @@ export default function ProfilePage() {
                       </p>
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" className="text-stone-400 hover:text-stone-600">
-                    <ArrowRight className="w-4 h-4" />
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="text-stone-400 hover:text-red-500"
+                      onClick={() => handleDeleteRecord(record.id)}
+                      disabled={isDeleting}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="text-stone-400 hover:text-stone-600">
+                      <ArrowRight className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             ))
@@ -457,7 +501,7 @@ export default function ProfilePage() {
 
         {/* 记录详情弹窗 */}
         <Dialog open={!!selectedRecord} onOpenChange={() => setSelectedRecord(null)}>
-          <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto" aria-describedby={undefined}>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 {selectedRecord?.type === 'constellation' && <Star className="w-5 h-5 text-violet-500" />}
