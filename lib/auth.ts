@@ -1,12 +1,12 @@
 import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
-import { PrismaClient } from "@prisma/client"
 
-const prisma = new PrismaClient()
+// 演示模式：用内存存储用户
+const demoUsers: Record<string, { id: string; phone: string; nickname: string; avatar: string }> = {}
 
 export const authOptions: NextAuthOptions = {
   providers: [
-    // 手机号登录（演示模式）
+    // 手机号登录（演示模式 - 不依赖数据库）
     CredentialsProvider({
       name: "手机号登录",
       credentials: {
@@ -24,41 +24,25 @@ export const authOptions: NextAuthOptions = {
         const nickname = credentials.nickname?.trim()
         const avatar = credentials.avatar
         
-        try {
-          // 查找用户
-          let user = await prisma.user.findUnique({
-            where: { phone }
-          })
-          
-          // 如果用户不存在，自动创建
-          if (!user) {
-            user = await prisma.user.create({
-              data: {
-                phone,
-                nickname: nickname || `用户${phone.slice(-4)}`,
-                email: `${phone}@zhiiji.com`,
-                avatarUrl: avatar || "🌟"
-              }
-            })
-            console.log('新用户注册:', user.id, phone, nickname)
+        // 演示模式：直接用内存存储
+        if (!demoUsers[phone]) {
+          demoUsers[phone] = {
+            id: `demo_${Date.now()}`,
+            phone,
+            nickname: nickname || `用户${phone.slice(-4)}`,
+            avatar: avatar || "🌟"
           }
+          console.log('新用户注册(演示模式):', phone, nickname)
+        }
 
-          return {
-            id: user.id,
-            phone: user.phone,
-            name: user.nickname || `用户${phone.slice(-4)}`,
-            avatar: user.avatarUrl || "🌟",
-          }
-        } catch (error) {
-          console.error('用户认证错误:', error)
-          return null
+        return {
+          id: demoUsers[phone].id,
+          phone: demoUsers[phone].phone,
+          name: demoUsers[phone].nickname,
+          avatar: demoUsers[phone].avatar,
         }
       }
     })
-    // 微信登录（需要企业认证的公众号/小程序）
-    // 如果需要启用微信登录，需要在 .env.local 中配置以下环境变量：
-    // WECHAT_APP_ID=your_app_id
-    // WECHAT_APP_SECRET=your_app_secret
   ],
   session: {
     strategy: "jwt",
