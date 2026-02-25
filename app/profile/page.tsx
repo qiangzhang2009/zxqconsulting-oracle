@@ -7,6 +7,12 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { ThemeToggle } from "@/components/theme-toggle"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { 
   User, 
   Sparkles, 
@@ -22,7 +28,8 @@ import {
   Trash2,
   Edit3,
   Check,
-  X
+  X,
+  Share2
 } from "lucide-react"
 
 // 头像选项
@@ -31,19 +38,49 @@ const AVATAR_OPTIONS = [
   "🦋", "🌸", "🌺", "🍀", "🎲", "🔱", "⚡", "🌊"
 ]
 
-// 记录类型定义
-interface RecordItem {
+// 完整记录类型
+interface FullRecord {
   id: string
   createdAt: string
   title: string
   type: string
+  // 星座
+  sunSign?: string
+  birthDate?: string
+  aiAnalysis?: string
+  simpleAnalysis?: string
+  // 配对
+  myConstellation?: string
+  theirConstellation?: string
+  matchScore?: number
+  advantages?: string[]
+  suggestions?: string[]
+  // 塔罗
+  cardName?: string
+  cardNumber?: number
+  keywords?: string[]
+  meaning?: string
+  aiInterpretation?: string
+  // 八字
+  yearPillar?: string
+  monthPillar?: string
+  dayPillar?: string
+  hourPillar?: string
+  // 周易
+  hexagramName?: string
+  hexagramSymbol?: string
+  guaCi?: string
+  xiangZheng?: string
 }
 
 export default function ProfilePage() {
   const { data: session, status, update } = useSession()
   const [activeTab, setActiveTab] = useState<'constellation' | 'match' | 'tarot' | 'bazi' | 'zhouyi'>('constellation')
-  const [records, setRecords] = useState<RecordItem[]>([])
+  const [records, setRecords] = useState<FullRecord[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  
+  // 记录详情弹窗
+  const [selectedRecord, setSelectedRecord] = useState<FullRecord | null>(null)
   
   // 编辑资料状态
   const [isEditing, setIsEditing] = useState(false)
@@ -126,12 +163,14 @@ export default function ProfilePage() {
       const res = await fetch(`${endpoint}?limit=20`)
       const data = await res.json()
       
-      // 格式化记录
-      const formattedRecords: RecordItem[] = (data.records || []).map((record: any) => ({
+      // 格式化记录 - 保存完整数据
+      const formattedRecords: FullRecord[] = (data.records || []).map((record: any) => ({
         id: record.id,
         createdAt: new Date(record.createdAt).toLocaleDateString('zh-CN'),
         title: getRecordTitle(record, activeTab),
-        type: activeTab
+        type: activeTab,
+        // 完整数据
+        ...record
       }))
       
       setRecords(formattedRecords)
@@ -380,7 +419,11 @@ export default function ProfilePage() {
             </Card>
           ) : (
             records.map((record) => (
-              <Card key={record.id} className="border-0 bg-white/80 backdrop-blur-sm hover:shadow-md transition-shadow">
+              <Card 
+                key={record.id} 
+                className="border-0 bg-white/80 backdrop-blur-sm hover:shadow-md transition-shadow cursor-pointer"
+                onClick={() => setSelectedRecord(record)}
+              >
                 <CardContent className="p-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
@@ -411,6 +454,176 @@ export default function ProfilePage() {
             ))
           )}
         </div>
+
+        {/* 记录详情弹窗 */}
+        <Dialog open={!!selectedRecord} onOpenChange={() => setSelectedRecord(null)}>
+          <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                {selectedRecord?.type === 'constellation' && <Star className="w-5 h-5 text-violet-500" />}
+                {selectedRecord?.type === 'match' && <Heart className="w-5 h-5 text-rose-500" />}
+                {selectedRecord?.type === 'tarot' && <Gem className="w-5 h-5 text-amber-500" />}
+                {selectedRecord?.type === 'bazi' && <User className="w-5 h-5 text-stone-500" />}
+                {selectedRecord?.type === 'zhouyi' && <Sun className="w-5 h-5 text-orange-500" />}
+                {selectedRecord?.title}
+              </DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <p className="text-sm text-stone-500 flex items-center gap-1">
+                <Calendar className="w-4 h-4" />
+                {selectedRecord?.createdAt}
+              </p>
+
+              {/* 星座详情 */}
+              {selectedRecord?.type === 'constellation' && (
+                <div className="space-y-4">
+                  <div className="p-4 bg-violet-50 rounded-lg">
+                    <p className="text-sm text-stone-600">出生日期</p>
+                    <p className="font-medium">{selectedRecord.birthDate}</p>
+                  </div>
+                  {selectedRecord.aiAnalysis && (
+                    <div className="space-y-2">
+                      <p className="font-medium text-violet-700">AI 深度分析</p>
+                      <div className="p-4 bg-stone-50 rounded-lg text-stone-700 whitespace-pre-wrap text-sm">
+                        {selectedRecord.aiAnalysis}
+                      </div>
+                    </div>
+                  )}
+                  {selectedRecord.simpleAnalysis && (
+                    <div className="space-y-2">
+                      <p className="font-medium text-violet-700">通俗解读</p>
+                      <div className="p-4 bg-violet-50 rounded-lg text-stone-700 whitespace-pre-wrap text-sm">
+                        {selectedRecord.simpleAnalysis}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* 配对详情 */}
+              {selectedRecord?.type === 'match' && (
+                <div className="space-y-4">
+                  <div className="p-4 bg-rose-50 rounded-lg text-center">
+                    <p className="text-sm text-stone-600">匹配度</p>
+                    <p className="text-4xl font-bold text-rose-500">{selectedRecord.matchScore}%</p>
+                  </div>
+                  {selectedRecord.advantages && selectedRecord.advantages.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="font-medium text-rose-700">优势</p>
+                      <ul className="list-disc list-inside text-sm text-stone-600">
+                        {selectedRecord.advantages.map((adv, i) => (
+                          <li key={i}>{adv}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {selectedRecord.suggestions && selectedRecord.suggestions.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="font-medium text-rose-700">建议</p>
+                      <ul className="list-disc list-inside text-sm text-stone-600">
+                        {selectedRecord.suggestions.map((sug, i) => (
+                          <li key={i}>{sug}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* 塔罗详情 */}
+              {selectedRecord?.type === 'tarot' && (
+                <div className="space-y-4">
+                  <div className="p-4 bg-amber-50 rounded-lg">
+                    <p className="text-sm text-stone-600">牌名</p>
+                    <p className="font-medium">{selectedRecord.cardName}</p>
+                    {selectedRecord.keywords && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {selectedRecord.keywords.map((kw, i) => (
+                          <span key={i} className="px-2 py-1 bg-amber-100 rounded-full text-xs">{kw}</span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  {selectedRecord.aiInterpretation && (
+                    <div className="space-y-2">
+                      <p className="font-medium text-amber-700">牌意解读</p>
+                      <div className="p-4 bg-stone-50 rounded-lg text-stone-700 whitespace-pre-wrap text-sm">
+                        {selectedRecord.aiInterpretation}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* 八字详情 */}
+              {selectedRecord?.type === 'bazi' && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-4 gap-2">
+                    <div className="p-2 bg-stone-100 rounded text-center">
+                      <p className="text-xs text-stone-500">年柱</p>
+                      <p className="font-medium">{selectedRecord.yearPillar}</p>
+                    </div>
+                    <div className="p-2 bg-stone-100 rounded text-center">
+                      <p className="text-xs text-stone-500">月柱</p>
+                      <p className="font-medium">{selectedRecord.monthPillar}</p>
+                    </div>
+                    <div className="p-2 bg-stone-100 rounded text-center">
+                      <p className="text-xs text-stone-500">日柱</p>
+                      <p className="font-medium">{selectedRecord.dayPillar}</p>
+                    </div>
+                    <div className="p-2 bg-stone-100 rounded text-center">
+                      <p className="text-xs text-stone-500">时柱</p>
+                      <p className="font-medium">{selectedRecord.hourPillar}</p>
+                    </div>
+                  </div>
+                  {selectedRecord.aiAnalysis && (
+                    <div className="space-y-2">
+                      <p className="font-medium text-stone-700">命理分析</p>
+                      <div className="p-4 bg-stone-50 rounded-lg text-stone-700 whitespace-pre-wrap text-sm">
+                        {selectedRecord.aiAnalysis}
+                      </div>
+                    </div>
+                  )}
+                  {selectedRecord.simpleAnalysis && (
+                    <div className="space-y-2">
+                      <p className="font-medium text-stone-700">通俗解读</p>
+                      <div className="p-4 bg-amber-50 rounded-lg text-stone-700 whitespace-pre-wrap text-sm">
+                        {selectedRecord.simpleAnalysis}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* 周易详情 */}
+              {selectedRecord?.type === 'zhouyi' && (
+                <div className="space-y-4">
+                  <div className="p-4 bg-orange-50 rounded-lg text-center">
+                    <p className="text-3xl font-bold">{selectedRecord.hexagramSymbol}</p>
+                    <p className="font-medium text-lg">{selectedRecord.hexagramName}</p>
+                  </div>
+                  {selectedRecord.guaCi && (
+                    <div className="space-y-2">
+                      <p className="font-medium text-orange-700">卦辞</p>
+                      <div className="p-3 bg-stone-50 rounded-lg text-stone-700 text-sm">
+                        {selectedRecord.guaCi}
+                      </div>
+                    </div>
+                  )}
+                  {selectedRecord.xiangZheng && (
+                    <div className="space-y-2">
+                      <p className="font-medium text-orange-700">象传</p>
+                      <div className="p-3 bg-orange-50 rounded-lg text-stone-700 text-sm">
+                        {selectedRecord.xiangZheng}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* 快捷入口 */}
         <div className="max-w-2xl mx-auto mt-8">
