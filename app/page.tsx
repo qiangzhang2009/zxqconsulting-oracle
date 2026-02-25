@@ -202,7 +202,7 @@ export default function HomePage() {
         <div className="text-center mb-20">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white/70 text-sm mb-8 animate-fade-in-up">
             <Sparkle className="w-4 h-4 text-amber-400" />
-            东西方智慧决策平台
+            知几 · 东西方智慧决策平台
           </div>
           
           <h1 className="font-serif text-5xl md:text-7xl font-bold mb-6 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
