@@ -55,13 +55,17 @@ export async function POST(request: Request) {
 
 export async function GET(request: Request) {
   try {
+    // 从 session 获取当前用户
+    const session = await getServerSession(authOptions)
+    const currentUserId = session?.user?.id
+    
     const { searchParams } = new URL(request.url)
-    const userId = searchParams.get('userId')
     const limit = parseInt(searchParams.get('limit') || '10')
     const offset = parseInt(searchParams.get('offset') || '0')
 
+    // 只返回当前登录用户的记录
     const records = await prisma.matchRecord.findMany({
-      where: userId ? { userId } : {},
+      where: currentUserId ? { userId: currentUserId } : {},
       orderBy: { createdAt: 'desc' },
       take: limit,
       skip: offset
