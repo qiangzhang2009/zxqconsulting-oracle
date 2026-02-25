@@ -155,9 +155,10 @@ export default function HomePage() {
             </Link>
             {session ? (
               <Link href="/profile">
-                <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
-                  <User className="w-4 h-4 mr-1" />
-                  我的
+                <Button variant="outline" className="border-white/20 text-white hover:bg-white/10 gap-2">
+                  <span className="text-lg">{(session.user as any)?.avatar || "🌟"}</span>
+                  <span className="hidden sm:inline">{session.user.name || "我"}</span>
+                  <User className="w-4 h-4" />
                 </Button>
               </Link>
             ) : (

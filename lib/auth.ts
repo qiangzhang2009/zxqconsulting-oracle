@@ -11,7 +11,9 @@ export const authOptions: NextAuthOptions = {
       name: "手机号登录",
       credentials: {
         phone: { label: "手机号", type: "text", placeholder: "请输入手机号" },
-        code: { label: "验证码", type: "text", placeholder: "请输入验证码（测试期任意）" }
+        code: { label: "验证码", type: "text", placeholder: "请输入验证码（测试期任意）" },
+        nickname: { label: "昵称", type: "text", required: false },
+        avatar: { label: "头像", type: "text", required: false }
       },
       async authorize(credentials) {
         if (!credentials?.phone) {
@@ -19,6 +21,8 @@ export const authOptions: NextAuthOptions = {
         }
 
         const phone = credentials.phone.trim()
+        const nickname = credentials.nickname?.trim()
+        const avatar = credentials.avatar
         
         try {
           // 查找用户
@@ -31,17 +35,19 @@ export const authOptions: NextAuthOptions = {
             user = await prisma.user.create({
               data: {
                 phone,
-                nickname: `用户${phone.slice(-4)}`,
-                email: `${phone}@zhiiji.com`
+                nickname: nickname || `用户${phone.slice(-4)}`,
+                email: `${phone}@zhiiji.com`,
+                avatarUrl: avatar || "🌟"
               }
             })
-            console.log('新用户注册:', user.id, phone)
+            console.log('新用户注册:', user.id, phone, nickname)
           }
 
           return {
             id: user.id,
             phone: user.phone,
             name: user.nickname || `用户${phone.slice(-4)}`,
+            avatar: user.avatarUrl || "🌟",
           }
         } catch (error) {
           console.error('用户认证错误:', error)
@@ -62,12 +68,14 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
+        token.avatar = (user as any).avatar
       }
       return token
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string
+        (session.user as any).avatar = token.avatar || "🌟"
       }
       return session
     }

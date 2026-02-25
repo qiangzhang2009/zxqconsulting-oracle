@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useSession, signOut } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { 
   User, 
@@ -18,8 +19,17 @@ import {
   ArrowRight,
   Loader2,
   Calendar,
-  Trash2
+  Trash2,
+  Edit3,
+  Check,
+  X
 } from "lucide-react"
+
+// 头像选项
+const AVATAR_OPTIONS = [
+  "🌟", "✨", "🌙", "☀️", "🔮", "🎯", "💫", "🌈",
+  "🦋", "🌸", "🌺", "🍀", "🎲", "🔱", "⚡", "🌊"
+]
 
 // 记录类型定义
 interface RecordItem {
@@ -30,10 +40,59 @@ interface RecordItem {
 }
 
 export default function ProfilePage() {
-  const { data: session, status } = useSession()
+  const { data: session, status, update } = useSession()
   const [activeTab, setActiveTab] = useState<'constellation' | 'match' | 'tarot' | 'bazi' | 'zhouyi'>('constellation')
   const [records, setRecords] = useState<RecordItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  
+  // 编辑资料状态
+  const [isEditing, setIsEditing] = useState(false)
+  const [editNickname, setEditNickname] = useState("")
+  const [editAvatar, setEditAvatar] = useState("🌟")
+  const [isSaving, setIsSaving] = useState(false)
+
+  // 获取用户信息
+  useEffect(() => {
+    if (session?.user) {
+      setEditNickname(session.user.name || "探索者")
+      setEditAvatar((session.user as any).avatar || "🌟")
+    }
+  }, [session])
+
+  // 保存资料
+  const handleSaveProfile = async () => {
+    if (!editNickname.trim()) {
+      alert("昵称不能为空")
+      return
+    }
+    
+    setIsSaving(true)
+    try {
+      const res = await fetch('/api/auth/update-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nickname: editNickname.trim(),
+          avatar: editAvatar
+        })
+      })
+      
+      if (res.ok) {
+        await update({
+          name: editNickname.trim(),
+          avatar: editAvatar
+        })
+        setIsEditing(false)
+      } else {
+        alert("保存失败")
+      }
+    } catch (error) {
+      console.error('保存失败:', error)
+      alert("保存失败")
+    } finally {
+      setIsSaving(false)
+    }
+  }
 
   // 加载用户记录
   useEffect(() => {
@@ -148,8 +207,14 @@ export default function ProfilePage() {
             <div className="h-24 bg-gradient-to-r from-violet-400 via-rose-400 to-amber-400" />
             <CardContent className="relative pt-0 pb-6">
               <div className="flex items-end justify-between -mt-12 mb-4">
-                <div className="w-24 h-24 rounded-full bg-white shadow-lg flex items-center justify-center border-4 border-white">
-                  <User className="w-12 h-12 text-violet-400" />
+                <div className="w-24 h-24 rounded-full bg-white shadow-lg flex items-center justify-center border-4 border-white text-5xl">
+                  {isEditing ? (
+                    <div className="relative">
+                      <span>{editAvatar}</span>
+                    </div>
+                  ) : (
+                    <span>{(session?.user as any)?.avatar || "🌟"}</span>
+                  )}
                 </div>
                 <div className="flex gap-2">
                   <ThemeToggle />
@@ -169,14 +234,83 @@ export default function ProfilePage() {
                   </Button>
                 </div>
               </div>
-              <div>
-                <h2 className="font-serif text-xl font-bold text-stone-800">
-                  {session?.user?.name || '用户'}
-                </h2>
-                <p className="text-stone-500 text-sm">
-                  {session?.user?.email || '探索者'}
-                </p>
-              </div>
+              
+              {isEditing ? (
+                // 编辑模式
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-stone-600">选择头像</label>
+                    <div className="grid grid-cols-8 gap-1">
+                      {AVATAR_OPTIONS.map((emoji) => (
+                        <button
+                          key={emoji}
+                          type="button"
+                          onClick={() => setEditAvatar(emoji)}
+                          className={`w-8 h-8 rounded-lg text-lg flex items-center justify-center transition-all ${
+                            editAvatar === emoji
+                              ? "bg-violet-500 ring-2 ring-violet-300"
+                              : "bg-stone-100 hover:bg-stone-200"
+                          }`}
+                        >
+                          {emoji}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-stone-600">昵称</label>
+                    <Input
+                      value={editNickname}
+                      onChange={(e) => setEditNickname(e.target.value)}
+                      placeholder="请输入昵称"
+                      maxLength={20}
+                      className="bg-white"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={handleSaveProfile}
+                      disabled={isSaving}
+                      className="flex-1 bg-violet-500 hover:bg-violet-600"
+                    >
+                      {isSaving ? "保存中..." : (
+                        <>
+                          <Check className="w-4 h-4 mr-1" />
+                          保存
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setIsEditing(false)
+                        setEditNickname(session?.user?.name || "探索者")
+                        setEditAvatar((session?.user as any)?.avatar || "🌟")
+                      }}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                // 显示模式
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="font-serif text-xl font-bold text-stone-800 flex items-center gap-2">
+                      {session?.user?.name || '用户'}
+                      <button
+                        onClick={() => setIsEditing(true)}
+                        className="p-1 hover:bg-stone-100 rounded-full transition-colors"
+                      >
+                        <Edit3 className="w-4 h-4 text-stone-400" />
+                      </button>
+                    </h2>
+                    <p className="text-stone-500 text-sm">
+                      {(session?.user as any)?.phone || session?.user?.email || '探索者'}
+                    </p>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
