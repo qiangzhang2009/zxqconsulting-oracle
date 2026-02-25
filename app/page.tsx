@@ -138,7 +138,7 @@ export default function HomePage() {
   if (!mounted) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-purple-950 via-indigo-950 to-background flex items-center justify-center">
-        <div className="animate-pulse text-white">加载中...</div>
+        <div className="animate-pulse text-white/80">✨ 正在加载知几...</div>
       </div>
     )
   }
