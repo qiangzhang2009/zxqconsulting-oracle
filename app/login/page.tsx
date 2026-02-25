@@ -13,11 +13,16 @@ export default function LoginPage() {
   const router = useRouter()
   const { data: session } = useSession()
   
+  const [mounted, setMounted] = useState(false)
   const [phone, setPhone] = useState("")
   const [code, setCode] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [sentCode, setSentCode] = useState(false)
   const [countdown, setCountdown] = useState(0)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // 发送验证码
   const handleSendCode = () => {
@@ -79,10 +84,10 @@ export default function LoginPage() {
 
   // 如果已登录，跳转到首页
   useEffect(() => {
-    if (session?.user) {
+    if (mounted && session?.user) {
       router.push("/")
     }
-  }, [session, router])
+  }, [session, router, mounted])
 
   return (
     <div className="min-h-screen relative flex items-center justify-center">

@@ -6,6 +6,7 @@ import { Sparkles, Star, Sun, Gem, ArrowRight, Sparkle, Heart, Briefcase, Compas
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { useState, useEffect } from "react"
 
 // 场景化入口 - 按文档规划
 const sceneEntries = [
@@ -126,7 +127,31 @@ function FloatingElements() {
 }
 
 export default function HomePage() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // 防止 hydration 不匹配
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-purple-950 via-indigo-950 to-background flex items-center justify-center">
+        <div className="animate-pulse text-white">加载中...</div>
+      </div>
+    )
+  }
+
+  // 登录加载中
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-purple-950 via-indigo-950 to-background flex items-center justify-center">
+        <div className="animate-pulse text-white">加载中...</div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* 背景 */}
