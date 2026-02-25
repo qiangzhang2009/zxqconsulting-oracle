@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useSession, signOut } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { 
   User, 
   Sparkles, 
@@ -150,15 +151,23 @@ export default function ProfilePage() {
                 <div className="w-24 h-24 rounded-full bg-white shadow-lg flex items-center justify-center border-4 border-white">
                   <User className="w-12 h-12 text-violet-400" />
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => signOut({ callbackUrl: '/' })}
-                  className="text-stone-500 hover:text-stone-700"
-                >
-                  <LogOut className="w-4 h-4 mr-1" />
-                  退出
-                </Button>
+                <div className="flex gap-2">
+                  <ThemeToggle />
+                  <Link href="/vip">
+                    <Button variant="outline" size="sm" className="text-amber-500 border-amber-300 hover:bg-amber-50">
+                      <Sparkles className="w-4 h-4 mr-1" />
+                      VIP
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => signOut({ callbackUrl: '/' })}
+                    className="text-stone-500"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
               <div>
                 <h2 className="font-serif text-xl font-bold text-stone-800">

@@ -5,6 +5,7 @@ import { useSession, signIn, signOut } from "next-auth/react"
 import { Sparkles, Star, Sun, Gem, ArrowRight, Sparkle, Heart, Briefcase, Compass, Moon, User, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 // 场景化入口 - 按文档规划
 const sceneEntries = [
@@ -142,6 +143,7 @@ export default function HomePage() {
             <span className="font-serif text-xl font-bold text-white">知几</span>
           </div>
           <div className="flex items-center gap-4">
+            <ThemeToggle />
             <Link href="/constellation" className="text-white/70 hover:text-white text-sm hidden sm:block">
               自我探索
             </Link>

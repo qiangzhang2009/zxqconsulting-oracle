@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Sparkles, ArrowLeft, Calendar, Clock, User, Loader2, Share2, RefreshCw, Gem, Crown, Lock, Unlock, ChevronRight, Zap, Heart } from "lucide-react"
 import Link from "next/link"
 import { LoadingAnimation, ButtonLoading } from "@/components/loading-animation"
+import { PosterGenerator } from "@/components/poster-generator"
 
 // 八字计算相关的常量
 const TIANGAN = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"]
@@ -676,6 +677,21 @@ ${aiAnalysis}
                 分享天机
               </Button>
             </div>
+
+            {/* 生成海报 */}
+            {result && (
+              <div className="mt-4">
+                <PosterGenerator 
+                  data={{
+                    title: `${result.yearGan}${result.yearZhi}年 ${result.monthGan}${result.monthZhi}月`,
+                    subtitle: `${result.dayGan}${result.dayZhi}日 ${result.hourGan}${result.hourZhi}时`,
+                    mainContent: aiAnalysis.slice(0, 150) + (aiAnalysis.length > 150 ? "..." : ""),
+                    theme: "amber"
+                  }}
+                  onGenerate={() => alert("海报已生成并下载！")}
+                />
+              </div>
+            )}
 
             <Link href="/" className="block">
               <Button variant="ghost" className="w-full text-white/60 hover:text-white">

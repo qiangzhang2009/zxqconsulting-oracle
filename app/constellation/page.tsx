@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Sparkles, ArrowLeft, Star, Sparkle, Loader2, Share2, RefreshCw, Heart, Lock, Unlock, ChevronRight, Zap, Wand2 } from "lucide-react"
 import Link from "next/link"
 import { LoadingAnimation } from "@/components/loading-animation"
+import { PosterGenerator } from "@/components/poster-generator"
 
 // 十二星座数据 - 只保留最基础的信息
 const CONSTELLATIONS = [
@@ -495,7 +496,7 @@ ${result.aiAnalysis}
               </Button>
               
               <p className="text-xs text-center text-stone-400">
-                🚀 测试期无限次 · AI智能推演 · 星辰解密
+                🚀 AI智能推演 · 星辰解密
               </p>
             </CardContent>
           </Card>
@@ -635,6 +636,21 @@ ${result.aiAnalysis}
                 <Share2 className="w-4 h-4 mr-2" />
                 分享启示
               </Button>
+              
+              {/* 生成海报按钮 */}
+              {result && (
+                <PosterGenerator 
+                  data={{
+                    title: result.constellation.name,
+                    subtitle: result.constellation.date,
+                    mainContent: result.aiAnalysis.slice(0, 200) + (result.aiAnalysis.length > 200 ? "..." : ""),
+                    extraInfo: `出生日期: ${result.birthDate}`,
+                    symbol: result.constellation.symbol,
+                    theme: "purple"
+                  }}
+                  onGenerate={() => alert("海报已生成并下载！")}
+                />
+              )}
             </div>
 
             <Link href="/" className="block">

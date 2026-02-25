@@ -3,6 +3,7 @@ import { Source_Serif_4, Inter } from "next/font/google"
 import "./globals.css"
 import { cn } from "@/lib/utils"
 import { Providers } from "@/components/providers"
+import { ThemeProvider } from "@/components/theme-provider"
 
 const serif = Source_Serif_4({
   subsets: ["latin"],
@@ -32,14 +33,16 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="zh-CN" className="dark">
+    <html lang="zh-CN" suppressHydrationWarning>
       <body className={cn(
         "min-h-screen bg-background font-sans antialiased",
         serif.variable,
         sans.variable
       )}>
         <Providers>
-          {children}
+          <ThemeProvider>
+            {children}
+          </ThemeProvider>
         </Providers>
       </body>
     </html>
